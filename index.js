@@ -36,12 +36,12 @@ mongoose.connect(uri, {});
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'tours', // Cloudinary folder name
-    allowed_formats: ['jpg', 'png', 'jpeg'], // Allowed formats
+    folder: 'tours', 
+    allowed_formats: ['jpg', 'png', 'jpeg'], 
     transformation: [
       {
-        quality: 'auto:low', // Automatically compress images with low quality
-        fetch_format: 'auto', // Convert to the best format based on user device
+        quality: 'auto:low',
+        fetch_format: 'auto',
       },
     ],
   },
@@ -50,7 +50,7 @@ const storage = new CloudinaryStorage({
 // Create multer instance
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file size limit for each file
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 const db = mongoose.connection;
 db.on('error', (err) => {
@@ -124,7 +124,7 @@ app.post('/api/attributes', attributes.createAttribute)
 app.get('/api/attributes', attributes.getAttributes)
 app.post('/api/attributes/:id/sub-attributes', attributes.addSubAttribute)
 app.delete('/api/attributes/:attributeId/sub-attributes/:subAttributeId', attributes.deleteSubattribute)
-app.delete('/api/attributes/:id', attributes.deleteAttribute)
+app.delete('/api/attributes/:id', attributes.deleteAttribute);
 
 app.get('/', (req, res) => {
   res.send('Hello, Express with MongoDB!');

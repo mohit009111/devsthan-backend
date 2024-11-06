@@ -40,6 +40,7 @@ const DestinationSchema = new mongoose.Schema({
             subHeading: String,
         },
     ],
+    tours: [{ type: String }], 
 });
 
 module.exports = mongoose.model('Destination', DestinationSchema);

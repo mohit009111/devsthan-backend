@@ -1,6 +1,7 @@
 const { connect } = require("mongoose");
 const express = require('express');
 const Tour = require("../models/tour");
+const Destination = require("../models/destinations");
 const User = require("../models/users");
 const multer = require('multer');
 const app = express();
@@ -36,22 +37,44 @@ const createTour = async (req, res) => {
       country,
       city,
       state,
-      images, // Add images array from the request body
-      bannerImage, // Add bannerImage URL from the request body
+      images, 
+      bannerImage, 
+ 
     } = req.body;
 
-    // Parse itineraries from standard, deluxe, and premium tours
-  
-    // Assuming the image URLs are sent in the `images` and `bannerImage`
-    const imageUrls = Array.isArray(images) ? images : [images]; // Ensure images is an array
+    const { destinationId } = req.body;
+    if (destinationId) {
+      console.log("Destination ID:", destinationId);
+      
+      // Check if the tour uuid already exists in the tours array of the Destination
+      const destination = await Destination.findOne({ uuid: destinationId });
+      
+      if (destination) {
+        // Check if the tour UUID is already in the 'tours' array
+        if (!destination.tours.includes(uuid)) {
+          // If not, add it to the tours array
+          await Destination.findOneAndUpdate(
+            { uuid: destinationId },
+            { $push: { tours: uuid } }
+          );
+          console.log("Tour UUID added to Destination.");
+        } else {
+          console.log("Tour UUID already exists in Destination.");
+        }
+      } else {
+        console.log("Destination not found.");
+      }
+    }
+    const imageUrls = Array.isArray(images) ? images : [images]; 
     const bannerImageUrl = bannerImage || null;
 
-    // Handle existing tour update or new tour creation
+
     let tour = await Tour.findOne({ uuid });
 
     if (tour) {
-      // Update the existing tour
+  
       tour.name = name;
+      tour.destinationId=destinationId;
       tour.overview = overview;
       tour.location = location;
       tour.duration = duration;
@@ -84,6 +107,7 @@ const createTour = async (req, res) => {
         name,
         overview,
         location,
+        destinationId,
         duration,
         groupSize,
         cancellationPolicy,
