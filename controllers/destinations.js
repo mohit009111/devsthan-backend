@@ -1,48 +1,38 @@
 const Destinations = require('../models/destinations');
 
 const createDestination = async (req, res) => {
-    try {
-      console.log("Request Body:", req.body);
-      const {
-        uuid, // UUID for identification
-        description,
-        country,
-        state,
-        city,
-        population,
-        languages,
-        capitalCity,
-        subDestinations,
-        highlights,
-        bannerImage,
-        images
-      } = req.body;
-  
-      // Check if a destination with the given UUID exists
-      let updatedDestination;
-      if (uuid) {
-        updatedDestination = await Destinations.findOneAndUpdate(
-          { uuid },
-          {
-            uuid, // Ensure UUID is part of the document
-            description,
-            country,
-            state,
-            city,
-            population,
-            languages,
-            capitalCity,
-            subDestinations,
-            highlights,
-            bannerImage,
-            images
-          },
-          { new: true, upsert: true } // `upsert: true` creates if not found
-        );
-      } else {
-        // Create a new destination if no UUID is provided
-        updatedDestination = new Destinations({
-          uuid,
+  try {
+    console.log("Request Body:", req.body);
+    const {
+      uuid, // UUID for identification
+      description,
+      country,
+      state,
+      city,
+      population,
+      languages,
+      capitalCity,
+      subDestinations,
+      highlights,
+      bannerImage,
+      images
+    } = req.body;
+
+    // Check if a destination with the given state already exists
+    if (!uuid) {
+      const existingDestination = await Destinations.findOne({ state });
+      if (existingDestination) {
+        return res.status(400).json({ message: 'Destination with this state already exists' });
+      }
+    }
+
+    // Check if a destination with the given UUID exists
+    let updatedDestination;
+    if (uuid) {
+      updatedDestination = await Destinations.findOneAndUpdate(
+        { uuid },
+        {
+          uuid, // Ensure UUID is part of the document
           description,
           country,
           state,
@@ -54,17 +44,36 @@ const createDestination = async (req, res) => {
           highlights,
           bannerImage,
           images
-        });
-  
-        await updatedDestination.save();
-      }
-  
-      res.status(201).json({ message: 'Destination saved successfully', destination: updatedDestination });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Failed to save destination', error: error.message });
+        },
+        { new: true, upsert: true } // `upsert: true` creates if not found
+      );
+    } else {
+      // Create a new destination if no UUID is provided and state is unique
+      updatedDestination = new Destinations({
+        uuid,
+        description,
+        country,
+        state,
+        city,
+        population,
+        languages,
+        capitalCity,
+        subDestinations,
+        highlights,
+        bannerImage,
+        images
+      });
+
+      await updatedDestination.save();
     }
-  };
+
+    res.status(201).json({ message: 'Destination saved successfully', destination: updatedDestination });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to save destination', error: error.message });
+  }
+};
+
 
 const getAllDestinations = async (req, res) => {
     console.log(req.body)
@@ -82,7 +91,7 @@ const getDestinationById = async (req, res) => {
   const { uuid } = req.params; // Extract the ID from the URL parameters
 
   try {
-    console.log("uuid............",uuid)
+
     // Find the destination by ID
     const destination = await Destinations.findOne({uuid});
 
