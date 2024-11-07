@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
 
 const DestinationSchema = new mongoose.Schema({
-    uuid: String,
+    uuid: {
+        type: String,
+        required: true,
+        unique: true
+      },
     bannerImage: String, // Store image URL or base64 string
     description: String,
     images: [String], // Array of image URLs or base64 strings

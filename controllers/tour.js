@@ -44,8 +44,7 @@ const createTour = async (req, res) => {
 
     const { destinationId } = req.body;
     if (destinationId) {
-      console.log("Destination ID:", destinationId);
-      
+
       // Check if the tour uuid already exists in the tours array of the Destination
       const destination = await Destination.findOne({ uuid: destinationId });
       

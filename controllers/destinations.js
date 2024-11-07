@@ -78,7 +78,30 @@ const getAllDestinations = async (req, res) => {
     }
 };
 
+const getDestinationById = async (req, res) => {
+  const { uuid } = req.params; // Extract the ID from the URL parameters
+
+  try {
+    console.log("uuid............",uuid)
+    // Find the destination by ID
+    const destination = await Destinations.findOne({uuid});
+
+    // Check if the destination was found
+    if (!destination) {
+      return res.status(404).json({ message: 'Destination not found' });
+    }
+
+    // Send the destination data as the response
+    res.status(200).json(destination);
+  } catch (error) {
+    // Handle errors (e.g., invalid ID format, server issues)
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
     createDestination,
     getAllDestinations,
+    getDestinationById
 };

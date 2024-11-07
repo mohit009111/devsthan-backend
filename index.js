@@ -107,6 +107,7 @@ app.post('/api/tours/:location/:date', tourController.getToursByFilter);
 app.get('/api/getTestimonials', testimonials.getAllTestimonials);
 app.post('/api/createTestimonial', testimonials.createTestimonial);
 app.post('/api/createDestination', destinations.createDestination);
+app.post('/api/getDestinationById/:uuid', destinations.getDestinationById);
 app.get('/api/getAllDestinations', destinations.getAllDestinations);
 app.post('/api/vendorTours', tourController.getToursForVendor);
 app.post('/api/updateTour/:tourId', tourController.updateTour);
