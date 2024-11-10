@@ -9,10 +9,11 @@ const tourController = require('./controllers/tour.js')
 const destinations = require('./controllers/destinations.js')
 const categegories = require('./controllers/categories.js')
 const attributes = require('./controllers/attributes.js')
+const contacts = require('./controllers/contact.js')
 // const imageUploader=require('./controllers/tour.js')
 const imageUploader = require('./controllers/cloudinary.js')
 const testimonials = require('./controllers/testimonials.js')
-const contactUs = require('./controllers/contactUs.js')
+
 const paymentController = require('./services/paymentService.js'
 )
 const cloudinary = require('cloudinary').v2;
@@ -93,7 +94,7 @@ app.delete('/api/deleteTour/:uuid', tourController.deleteTour);
 
 app.post('/api/updateUser', authRouter.updateUser)
 app.post('/api/getUser', authRouter.getUser)
-app.post('/api/contactus', contactUs.submitContactForm);
+
 app.post('/api/allTours', tourController.getAllTours);
 app.post('/api/checkout', paymentController.checkout);
 app.post('/api/paymentVerification', paymentController.paymentVerification);
@@ -120,6 +121,8 @@ app.get('/api/wishlist/:userId', wishlist.getWishlist);
 app.post('/api/removeFromWishlist', wishlist.removeFromWishlist);
 app.post('/api/categories', categegories.createCategories)
 app.get('/api/categories', categegories.getCategories)
+app.post('/api/createInquiry', contacts.createInquiryOrContact)
+
 app.delete('/api/categories/:id', categegories.deleteCategory)
 
 app.post('/api/attributes', attributes.createAttribute)
