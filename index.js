@@ -103,10 +103,11 @@ app.post('/api/getBookedTours/:vendorId', paymentController.getBookedToursByVend
 app.post('/api/updateTourStatus', paymentController.updateBookedToursByVendor);
 app.post('/api/getBookedToursbyUser/:userId', paymentController.getBookedToursByUser);
 // app.get('/api/tours/:location/:date', tourController.getToursByLocationDate);
-app.post('/api/tours/:location/:date', tourController.getToursByFilter);
+app.post('/api/tours/:location', tourController.getToursByFilter);
 app.get('/api/getTestimonials', testimonials.getAllTestimonials);
 app.post('/api/createTestimonial', testimonials.createTestimonial);
 app.post('/api/createDestination', destinations.createDestination);
+app.get('/api/getAllLocations', destinations.getAllLocations);
 app.post('/api/getDestinationById/:uuid', destinations.getDestinationById);
 app.get('/api/getAllDestinations', destinations.getAllDestinations);
 app.post('/api/vendorTours', tourController.getToursForVendor);

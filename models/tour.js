@@ -18,6 +18,7 @@ const tourDetailsSchema = new mongoose.Schema({
   city:{ type: String },
   state:{ type: String },
   destinationId: { type: String },
+  categories:[{ type: String }],
   // Fixed Dates details
   fixedDates: {
     enabled: { type: Boolean, default: false },

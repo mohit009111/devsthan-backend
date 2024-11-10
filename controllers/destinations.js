@@ -1,10 +1,10 @@
 const Destinations = require('../models/destinations');
-
+const Tour = require('../models/tour') 
 const createDestination = async (req, res) => {
   try {
     console.log("Request Body:", req.body);
     const {
-      uuid, // UUID for identification
+      uuid, 
       description,
       country,
       state,
@@ -18,7 +18,7 @@ const createDestination = async (req, res) => {
       images
     } = req.body;
 
-    // Check if a destination with the given state already exists
+   
     if (!uuid) {
       const existingDestination = await Destinations.findOne({ state });
       if (existingDestination) {
@@ -26,13 +26,13 @@ const createDestination = async (req, res) => {
       }
     }
 
-    // Check if a destination with the given UUID exists
+  
     let updatedDestination;
     if (uuid) {
       updatedDestination = await Destinations.findOneAndUpdate(
         { uuid },
         {
-          uuid, // Ensure UUID is part of the document
+          uuid, 
           description,
           country,
           state,
@@ -45,10 +45,10 @@ const createDestination = async (req, res) => {
           bannerImage,
           images
         },
-        { new: true, upsert: true } // `upsert: true` creates if not found
+        { new: true, upsert: true } 
       );
     } else {
-      // Create a new destination if no UUID is provided and state is unique
+
       updatedDestination = new Destinations({
         uuid,
         description,
@@ -108,9 +108,48 @@ const getDestinationById = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+const getAllLocations = async (req, res) => {
+  try {
+    // Fetch destinations with selected fields
+    const destinations = await Destinations.find({}, 'country city state');
+
+    // Fetch tours with `location` field
+    const tours = await Tour.find({}, 'location');
+
+    
+    const uniqueLocationsSet = new Set();
+
+   
+    destinations.forEach(dest => {
+      if (dest.country?.label) uniqueLocationsSet.add(dest.country.label);
+      if (dest.state?.label) uniqueLocationsSet.add(dest.state.label);
+      if (dest.city?.label) uniqueLocationsSet.add(dest.city.label);
+    });
+
+    // Add `location` from tours to the Set
+    tours.forEach(tour => {
+      if (tour.location) uniqueLocationsSet.add(tour.location);
+    });
+
+    // Convert the Set back to an array
+    const mergedLocationsArray = Array.from(uniqueLocationsSet);
+
+    // Structure the response
+    const response = {
+      destinations: mergedLocationsArray
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error fetching locations:", error);
+    res.status(500).json({ error: "An error occurred while fetching locations" });
+  }
+};
+
 
 module.exports = {
     createDestination,
     getAllDestinations,
-    getDestinationById
+    getDestinationById,
+    getAllLocations
 };
