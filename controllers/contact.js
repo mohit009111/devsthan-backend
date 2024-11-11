@@ -4,11 +4,7 @@ const Contact = require('../models/contact');
 const createInquiryOrContact = async (req, res) => {
   try {
     const { fullName , email, message, phone, uuid } = req.body;
-    console.log(fullName)
-    console.log(email)
-    console.log(message)
-    console.log(phone)
-    console.log(uuid)
+    
     if (!fullName || !email || !message || !phone) {
       return res.status(400).json({ error: 'Full Name, Email, Message, and Phone are required' });
     }
@@ -26,6 +22,28 @@ const createInquiryOrContact = async (req, res) => {
   }
 };
 
+const getAllInquiries = async (req, res) => {
+  try {
+    const inquiries = await Inquiry.find();
+    res.status(200).json({ success: true, data: inquiries });
+  } catch (error) {
+    console.error('Error retrieving inquiries:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+const getAllContacts = async (req, res) => {
+  try {
+    const contacts = await Contact.find();
+    res.status(200).json({ success: true, data: contacts });
+  } catch (error) {
+    console.error('Error retrieving contacts:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
     createInquiryOrContact,
+    getAllInquiries,
+    getAllContacts
 };

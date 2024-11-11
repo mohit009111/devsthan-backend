@@ -122,7 +122,8 @@ app.post('/api/removeFromWishlist', wishlist.removeFromWishlist);
 app.post('/api/categories', categegories.createCategories)
 app.get('/api/categories', categegories.getCategories)
 app.post('/api/createInquiry', contacts.createInquiryOrContact)
-
+app.get('/api/getAllInquiries', contacts.getAllInquiries)
+app.get('/api/getAllContacts', contacts.getAllContacts)
 app.delete('/api/categories/:id', categegories.deleteCategory)
 
 app.post('/api/attributes', attributes.createAttribute)
