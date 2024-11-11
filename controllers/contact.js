@@ -2,7 +2,7 @@ const Inquiry = require('../models/inquiry');
 const Contact = require('../models/contact');
 require('dotenv').config();
 const nodemailer = require("nodemailer");
-console.log(process.env.EMAIL_PASS)
+
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -36,7 +36,7 @@ const createInquiryOrContact = async (req, res) => {
     };
 
     // Send email
- transporter.sendMail(mailOptions, (error, info) => {
+      transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error("Error sending email:", error);
         return res.status(500).json({ error: 'Error sending email' });
