@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 
 const wishlist = require('./controllers/wishlist.js')
+const blogs = require('./controllers/blogs.js')
 const authRouter = require('./controllers/auth.js');
 const tourController = require('./controllers/tour.js')
 const destinations = require('./controllers/destinations.js')
@@ -131,6 +132,17 @@ app.get('/api/attributes', attributes.getAttributes)
 app.post('/api/attributes/:id/sub-attributes', attributes.addSubAttribute)
 app.delete('/api/attributes/:attributeId/sub-attributes/:subAttributeId', attributes.deleteSubattribute)
 app.delete('/api/attributes/:id', attributes.deleteAttribute);
+
+
+
+app.post('/api/createBlog', blogs.createBlog);
+
+app.delete('/api/deleteBlog/:blog', blogs.deleteBlog);
+
+app.put('/api/updateBlog/:blog', blogs.updateBlog);
+app.get('/api/getBlogById/:blog', blogs.getBlogById);
+app.get('/api/getAllBlogs', blogs.getAllBlogs);
+
 
 app.get('/', (req, res) => {
   res.send('Hello, Express with MongoDB!');

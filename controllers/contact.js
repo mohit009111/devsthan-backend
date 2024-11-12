@@ -1,5 +1,6 @@
 const Inquiry = require('../models/inquiry'); 
 const Contact = require('../models/contact');
+const axios = require('axios');
 require('dotenv').config();
 const nodemailer = require("nodemailer");
 
@@ -44,6 +45,31 @@ const createInquiryOrContact = async (req, res) => {
       console.log("Email sent: " + info.response);
       res.status(201).json({ success: true, data: savedData });
     });
+    try {
+      const aisensyPayload = {
+        apiKey: process.env.AISENSY_API_KEY,
+        campaignName: "whatsapp message",
+        destination: phone.startsWith('91') ? phone : `91${phone}`, // Assuming you want to prefix with country code
+        userName: "Devsthan expert chatbot",
+        templateParams: [],
+        source: "new-landing-page form",
+        media: {},
+        buttons: [],
+        carouselCards: [],
+        location: {},
+        paramsFallbackValue: {}
+      };
+
+      const aisensyResponse = await axios.post('https://api.aisensy.com/v1/messaging/send', aisensyPayload, {
+        headers: {
+          'Authorization': `Bearer ${aisensyPayload.apiKey}`, // Ensure you are using the API key safely
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('WhatsApp message sent via Aisensy:', aisensyResponse.data);
+    } catch (error) {
+      console.error('Error sending WhatsApp message via Aisensy:', error.response ? error.response.data : error.message);
+    }
 
     res.status(201).json({ success: true, data: savedData });
   } catch (error) {
@@ -55,8 +81,15 @@ const createInquiryOrContact = async (req, res) => {
 
 const getAllInquiries = async (req, res) => {
   try {
-    const inquiries = await Inquiry.find();
-    res.status(200).json({ success: true, data: inquiries });
+    const inquiries = await Inquiry.find().sort({ createdAt: -1 });
+    
+    // Format the createdAt field for each inquiry
+    const formattedInquiries = inquiries.map(inquiry => ({
+      ...inquiry.toObject(),
+      createdAt: new Date(inquiry.createdAt).toLocaleString()
+    }));
+
+    res.status(200).json({ success: true, data: formattedInquiries });
   } catch (error) {
     console.error('Error retrieving inquiries:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -65,8 +98,15 @@ const getAllInquiries = async (req, res) => {
 
 const getAllContacts = async (req, res) => {
   try {
-    const contacts = await Contact.find();
-    res.status(200).json({ success: true, data: contacts });
+    const contacts = await Contact.find().sort({ createdAt: -1 });
+    
+    // Format the createdAt field for each contact
+    const formattedContacts = contacts.map(contact => ({
+      ...contact.toObject(),
+      createdAt: new Date(contact.createdAt).toLocaleString()
+    }));
+
+    res.status(200).json({ success: true, data: formattedContacts });
   } catch (error) {
     console.error('Error retrieving contacts:', error);
     res.status(500).json({ error: 'Internal Server Error' });
