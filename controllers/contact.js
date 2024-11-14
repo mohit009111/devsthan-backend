@@ -1,4 +1,4 @@
-const Inquiry = require('../models/inquiry'); 
+const Inquiry = require('../models/inquiry');
 const Contact = require('../models/contact');
 const axios = require('axios');
 require('dotenv').config();
@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS 
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -35,9 +35,7 @@ const createInquiryOrContact = async (req, res) => {
       subject: "Thank you for your inquiry/contact!",
       text: `Hi ${fullName},\n\nThank you for reaching out! We have received your message: "${message}".\n\nWe'll get back to you shortly.\n\nBest regards,\nDevsthan Expert`
     };
-
-    // Send email
-      transporter.sendMail(mailOptions, (error, info) => {
+    transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error("Error sending email:", error);
         return res.status(500).json({ error: 'Error sending email' });
@@ -77,12 +75,10 @@ const createInquiryOrContact = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
-
-
 const getAllInquiries = async (req, res) => {
   try {
     const inquiries = await Inquiry.find().sort({ createdAt: -1 });
-    
+
     // Format the createdAt field for each inquiry
     const formattedInquiries = inquiries.map(inquiry => ({
       ...inquiry.toObject(),
@@ -99,7 +95,7 @@ const getAllInquiries = async (req, res) => {
 const getAllContacts = async (req, res) => {
   try {
     const contacts = await Contact.find().sort({ createdAt: -1 });
-    
+
     // Format the createdAt field for each contact
     const formattedContacts = contacts.map(contact => ({
       ...contact.toObject(),
@@ -114,7 +110,7 @@ const getAllContacts = async (req, res) => {
 };
 
 module.exports = {
-    createInquiryOrContact,
-    getAllInquiries,
-    getAllContacts
+  createInquiryOrContact,
+  getAllInquiries,
+  getAllContacts
 };
