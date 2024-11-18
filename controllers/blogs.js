@@ -7,9 +7,7 @@ const createBlog = async (req, res) => {
 
     try {
         const { bannerImage, title, description ,uuid} = req.body;
-        console.log(bannerImage)
-        console.log(title)
-        console.log(description)
+   
         const newBlog = new Blog({ bannerImage, title, description,uuid });
         await newBlog.save();
         res.status(201).json({ success: true, data: newBlog });
@@ -32,7 +30,7 @@ const getAllBlogs = async (req, res) => {
 
 // Get a single blog post by ID
 const getBlogById = async (req, res) => {
-console.log(req.params.blog)
+
     try {
         const blog = await Blog.findOne({ uuid:req.params.blog  });
         if (!blog) return res.status(404).json({ success: false, error: 'Blog not found' });

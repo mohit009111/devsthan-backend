@@ -163,6 +163,7 @@ const deleteTour = async (req, res) => {
 
 const getAllTours = async (req, res) => {
   try {
+    console.log(req)
     const { location, tourType, minPrice, maxPrice, durations } = req.body;
     const tours = await Tour.find();
     const filteredTours = tours.filter((tour) => tour.status !== "disabled");

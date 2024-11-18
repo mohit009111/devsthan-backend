@@ -14,6 +14,7 @@ const contacts = require('./controllers/contact.js')
 // const imageUploader=require('./controllers/tour.js')
 const imageUploader = require('./controllers/cloudinary.js')
 const testimonials = require('./controllers/testimonials.js')
+const whyChoose=require('./controllers/whyChoose.js')
 
 const paymentController = require('./services/paymentService.js'
 )
@@ -32,14 +33,12 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
-
 mongoose.connect(uri, {});
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'tours', 
-    allowed_formats: ['jpg', 'png', 'jpeg'], 
+    folder: 'tours',
+    allowed_formats: ['jpg', 'png', 'jpeg'],
     transformation: [
       {
         quality: 'auto:low',
@@ -116,7 +115,7 @@ app.post('/api/vendorTours', tourController.getToursForVendor);
 app.post('/api/updateTour/:tourId', tourController.updateTour);
 app.get('/api/getTour/:tourId', tourController.getTourDetails);
 app.get('/api/getkey', (req, res) => res.status(200).json("rzp_test_51M4AB2hSU08Ih"))
-app.post('/uploadImage', imageUploader.imageUpload);
+
 app.post('/api/addToWishlist', wishlist.addToWishlist);
 app.get('/api/wishlist/:userId', wishlist.getWishlist);
 app.post('/api/removeFromWishlist', wishlist.removeFromWishlist);
@@ -136,12 +135,17 @@ app.delete('/api/attributes/:id', attributes.deleteAttribute);
 
 
 app.post('/api/createBlog', blogs.createBlog);
-
 app.delete('/api/deleteBlog/:blog', blogs.deleteBlog);
-
 app.put('/api/updateBlog/:blog', blogs.updateBlog);
 app.get('/api/getBlogById/:blog', blogs.getBlogById);
 app.get('/api/getAllBlogs', blogs.getAllBlogs);
+
+
+app.post('/api/createWhyChoose', whyChoose.createWhyChoose);
+app.delete('/api/deleteWhyChoose/:WhyChoose', whyChoose.deleteWhyChoose);
+app.put('/api/updateWhyChoose/:WhyChoose', whyChoose.updateWhyChoose);
+
+app.get('/api/getAllWhyChoose', whyChoose.getAllWhyChoose);
 
 
 app.get('/', (req, res) => {

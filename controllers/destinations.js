@@ -76,7 +76,7 @@ const createDestination = async (req, res) => {
 
 
 const getAllDestinations = async (req, res) => {
-    console.log(req.body)
+   
     try {
         // Retrieve all destinations from the database
         const destinations = await Destinations.find();
