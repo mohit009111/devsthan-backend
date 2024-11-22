@@ -12,8 +12,12 @@ const cloudinary = require('cloudinary').v2;
 app.use(express.json());
 
 const createTour = async (req, res) => {
-  console.log("body",req.body.standardDetails); 
+  console.log("Received body:", req.body);
   try {
+    // Parse `tourData` from req.body if it exists and is a JSON string
+    const tourData = typeof req.body.tourData === "string" ? JSON.parse(req.body.tourData) : req.body;
+
+    // Destructure properties from the parsed tourData
     const {
       uuid,
       name,
@@ -22,15 +26,14 @@ const createTour = async (req, res) => {
       duration,
       groupSize,
       cancellationPolicy,
-      transportation,
       availableDates,
       languages,
       departureDetails,
       additionalInfo,
       standardDetails,
       deluxeDetails,
-      categories,
       premiumDetails,
+      categories,
       knowBeforeYouGo,
       fixedDates,
       openHours,
@@ -38,21 +41,21 @@ const createTour = async (req, res) => {
       country,
       city,
       state,
-      images, 
-      bannerImage, 
- 
-    } = req.body;
+      images,
+      bannerImage,
+    } = tourData;
 
-    const { destinationId } = req.body;
+    const { destinationId } = tourData;
+
+  
+
+    // Check if a destination ID exists and handle the destination updates
     if (destinationId) {
-
-      // Check if the tour uuid already exists in the tours array of the Destination
       const destination = await Destination.findOne({ uuid: destinationId });
-      
+
       if (destination) {
         // Check if the tour UUID is already in the 'tours' array
         if (!destination.tours.includes(uuid)) {
-          // If not, add it to the tours array
           await Destination.findOneAndUpdate(
             { uuid: destinationId },
             { $push: { tours: uuid } }
@@ -65,31 +68,32 @@ const createTour = async (req, res) => {
         console.log("Destination not found.");
       }
     }
-    const imageUrls = Array.isArray(images) ? images : [images]; 
+
+    // Prepare image URLs
+    const imageUrls = Array.isArray(images) ? images : [images];
     const bannerImageUrl = bannerImage || null;
 
-
+    // Check if the tour already exists
     let tour = await Tour.findOne({ uuid });
 
     if (tour) {
-  
+      // Update the existing tour
       tour.name = name;
-      tour.destinationId=destinationId;
+      tour.destinationId = destinationId;
       tour.overview = overview;
       tour.location = location;
       tour.duration = duration;
       tour.groupSize = groupSize;
       tour.cancellationPolicy = cancellationPolicy;
-      tour.transportation = transportation === 'true';
       tour.availableDates = availableDates;
       tour.languages = Array.isArray(languages) ? languages : [languages];
       tour.departureDetails = departureDetails;
       tour.additionalInfo = Array.isArray(additionalInfo) ? additionalInfo : [additionalInfo];
       tour.bannerImage = bannerImageUrl || tour.bannerImage;
       tour.images = imageUrls.length > 0 ? imageUrls : tour.images;
-      tour.standardDetails = JSON.parse(standardDetails); // Use parsed object directly
-      tour.deluxeDetails = JSON.parse(deluxeDetails);
-      tour.premiumDetails = JSON.parse(premiumDetails);
+      tour.standardDetails = standardDetails;
+      tour.deluxeDetails = deluxeDetails;
+      tour.premiumDetails = premiumDetails;
       tour.knowBeforeYouGo = Array.isArray(knowBeforeYouGo) ? knowBeforeYouGo : [knowBeforeYouGo];
       tour.fixedDates = fixedDates;
       tour.openHours = openHours;
@@ -97,7 +101,7 @@ const createTour = async (req, res) => {
       tour.city = city;
       tour.state = state;
       tour.welcomeDrinks = welcomeDrinks;
-      tour.categories=categories;
+      tour.categories = categories;
 
       const updatedTour = await tour.save(); // Save the updated tour
       return res.status(200).json(updatedTour);
@@ -112,17 +116,17 @@ const createTour = async (req, res) => {
         duration,
         groupSize,
         cancellationPolicy,
-        transportation: transportation === 'true',
+     
         availableDates,
         languages: Array.isArray(languages) ? languages : [languages],
         departureDetails,
         additionalInfo: Array.isArray(additionalInfo) ? additionalInfo : [additionalInfo],
         bannerImage: bannerImageUrl,
         images: imageUrls.length > 0 ? imageUrls : [],
-        standardDetails: JSON.parse(standardDetails),
-        deluxeDetails: JSON.parse(deluxeDetails),
-        premiumDetails: JSON.parse(premiumDetails),
-        knowBeforeYouGo: Array.isArray(knowBeforeYouGo) ? knowBeforeYouGo : [knowBeforeYouGo],
+        standardDetails,
+        deluxeDetails,
+        premiumDetails,
+        knowBeforeYouGo,
         fixedDates,
         openHours,
         welcomeDrinks,
@@ -131,15 +135,16 @@ const createTour = async (req, res) => {
         city,
         state,
       });
+
       const createdTour = await newTour.save();
       return res.status(201).json(createdTour);
     }
+    
   } catch (error) {
-    console.error('Error creating tour:', error);
-    return res.status(500).json({ error: 'An error occurred while creating the tour.' });
+    console.error("Error creating tour:", error);
+    return res.status(500).json({ error: "An error occurred while creating the tour." });
   }
 };
-
 
 const deleteTour = async (req, res) => {
   try {

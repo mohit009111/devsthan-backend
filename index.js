@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const multer = require('multer');
-
 const wishlist = require('./controllers/wishlist.js')
 const blogs = require('./controllers/blogs.js')
 const authRouter = require('./controllers/auth.js');

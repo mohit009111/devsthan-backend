@@ -14,11 +14,11 @@ const tourDetailsSchema = new mongoose.Schema({
   additionalInfo: [{ type: String }],
   bannerImage: { type: String, default: null },
   images: [{ type: String }],
-  country:{ type: String },
-  city:{ type: String },
-  state:{ type: String },
+  country: { type: String },
+  city: { type: String },
+  state: { type: String },
   destinationId: { type: String },
-  categories:[{ type: String }],
+  categories: [{ type: String }],
   // Fixed Dates details
   fixedDates: {
     enabled: { type: Boolean, default: false },
@@ -53,6 +53,9 @@ const tourDetailsSchema = new mongoose.Schema({
       {
         title: { type: String },
         duration: { type: String },
+        photos: [{ type: String }],
+        description: { type: String },
+        day: { type: Number },
         meals: {
           breakfast: {
             isAvailable: { type: Boolean, default: false },
@@ -71,25 +74,64 @@ const tourDetailsSchema = new mongoose.Schema({
           }
         }
         ,
-        image: { type: String },
-        description: { type: String },
-        day: { type: Number },
-        hotelName: { type: String },
-        hotelUrl: { type: String },
-        siteSeenPhotos: { type: [String], default: [] },
-        hotelPhotos: { type: [String], default: [] },
-        managerName: { type: String },
-        managerImage: { type: String },
-
-        carName: { type: String },
-        carPhotos: [{ type: String }],
-        transportation: { type: Boolean },
-
-
-
-
-
-
+        hotel: {
+          isIncluded: { type: Boolean, default: false },
+          name: { type: String, default: "" },
+          url: { type: String, default: "" },
+          hotelCategory: [{ type: String, default: "" }],
+          hotelImages: [{ type: String, default: [] }],
+          roomPrice: { type: Number, default: null },
+          roomCategory: { type: String, default: "" },
+          roomImages: [{ type: String, default: [] }],
+          location: { type: String, default: "" }
+        },
+        activity: {
+          name: { type: String, default: "" },
+          description: { type: String, default: "" },
+          price: { type: String, default: "" },
+          photos: [{ type: String, default: [] }]
+        },
+       
+        siteSeen: {
+          isAvailable: { type: Boolean, default: false },
+          name: { type: String, default: "" },
+          description: { type: String, default: "" },
+          photos: [{ type: String, default: [] }]
+        },
+        transportation: {
+          isIncluded: { type: Boolean, default: false },
+          car: {
+            isIncluded: { type: Boolean, default: false },
+            name: { type: String, default: "" },
+            category: { type: String, default: "" },
+            description: { type: String, default: "" },
+            departureTime: { type: String, default: "" },
+            photos: [{ type: String, default: [] }]
+          },
+          bus: {
+            isIncluded: { type: Boolean, default: false },
+            name: { type: String, default: "" },
+            category: { type: String, default: "" },
+            description: { type: String, default: "" },
+            departureTime: { type: String, default: "" },
+            photos: [{ type: String, default: [] }]
+          },
+          train: {
+            isIncluded: { type: Boolean, default: false },
+            name: { type: String, default: "" },
+            description: { type: String, default: "" },
+            departureTime: { type: String, default: "" },
+            photos: [{ type: String, default: [] }]
+          },
+          flight: {
+            isIncluded: { type: Boolean, default: false },
+            name: { type: String, default: "" },
+            description: { type: String, default: "" },
+            departureTime: { type: String, default: "" },
+            photos: [{ type: String, default: [] }]
+          }
+        },
+      
       },
     ],
   },
@@ -111,6 +153,9 @@ const tourDetailsSchema = new mongoose.Schema({
       {
         title: { type: String },
         duration: { type: String },
+        photos: [{ type: String }],
+        description: { type: String },
+        day: { type: Number },
         meals: {
           breakfast: {
             isAvailable: { type: Boolean, default: false },
@@ -129,19 +174,64 @@ const tourDetailsSchema = new mongoose.Schema({
           }
         }
         ,
-        image: { type: String },
-        description: { type: String },
-        day: { type: Number },
-        hotelName: { type: String },
-        hotelUrl: { type: String },
-        siteSeenPhotos: { type: [String], default: [] },
-        hotelPhotos: { type: [String], default: [] },
-        managerName: { type: String },
-        managerImage: { type: String },
-        carName: { type: String },
-        carPhotos: [{ type: String }],
-        transportation: { type: Boolean },
-
+        hotel: {
+          isIncluded: { type: Boolean, default: false },
+          name: { type: String, default: "" },
+          url: { type: String, default: "" },
+          hotelCategory: [{ type: String, default: "" }],
+          hotelImages: [{ type: String, default: [] }],
+          roomPrice: { type: Number, default: null },
+          roomCategory: { type: String, default: "" },
+          roomImages: [{ type: String, default: [] }],
+          location: { type: String, default: "" }
+        },
+        activity: {
+          name: { type: String, default: "" },
+          description: { type: String, default: "" },
+          price: { type: String, default: "" },
+          photos: [{ type: String, default: [] }]
+        },
+       
+        siteSeen: {
+          isAvailable: { type: Boolean, default: false },
+          name: { type: String, default: "" },
+          description: { type: String, default: "" },
+          photos: [{ type: String, default: [] }]
+        },
+        transportation: {
+          isIncluded: { type: Boolean, default: false },
+          car: {
+            isIncluded: { type: Boolean, default: false },
+            name: { type: String, default: "" },
+            category: { type: String, default: "" },
+            description: { type: String, default: "" },
+            departureTime: { type: String, default: "" },
+            photos: [{ type: String, default: [] }]
+          },
+          bus: {
+            isIncluded: { type: Boolean, default: false },
+            name: { type: String, default: "" },
+            category: { type: String, default: "" },
+            description: { type: String, default: "" },
+            departureTime: { type: String, default: "" },
+            photos: [{ type: String, default: [] }]
+          },
+          train: {
+            isIncluded: { type: Boolean, default: false },
+            name: { type: String, default: "" },
+            description: { type: String, default: "" },
+            departureTime: { type: String, default: "" },
+            photos: [{ type: String, default: [] }]
+          },
+          flight: {
+            isIncluded: { type: Boolean, default: false },
+            name: { type: String, default: "" },
+            description: { type: String, default: "" },
+            departureTime: { type: String, default: "" },
+            photos: [{ type: String, default: [] }]
+          }
+        },
+       
       },
     ],
   },
@@ -163,6 +253,9 @@ const tourDetailsSchema = new mongoose.Schema({
       {
         title: { type: String },
         duration: { type: String },
+        photos: [{ type: String }],
+        description: { type: String },
+        day: { type: Number },
         meals: {
           breakfast: {
             isAvailable: { type: Boolean, default: false },
@@ -181,19 +274,64 @@ const tourDetailsSchema = new mongoose.Schema({
           }
         }
         ,
-        image: { type: String },
-        description: { type: String },
-        day: { type: Number },
-        hotelName: { type: String },
-        hotelUrl: { type: String },
-        siteSeenPhotos: { type: [String], default: [] },
-        hotelPhotos: { type: [String], default: [] },
-        managerName: { type: String },
-        managerImage: { type: String },
-        carName: { type: String },
-        carPhotos: [{ type: String }],
-        transportation: { type: Boolean },
-
+        hotel: {
+          isIncluded: { type: Boolean, default: false },
+          name: { type: String, default: "" },
+          url: { type: String, default: "" },
+          hotelCategory: [{ type: String, default: "" }],
+          hotelImages: [{ type: String, default: [] }],
+          roomPrice: { type: Number, default: null },
+          roomCategory: { type: String, default: "" },
+          roomImages: [{ type: String, default: [] }],
+          location: { type: String, default: "" }
+        },
+        activity: {
+          name: { type: String, default: "" },
+          description: { type: String, default: "" },
+          price: { type: String, default: "" },
+          photos: [{ type: String, default: [] }]
+        },
+       
+        siteSeen: {
+          isAvailable: { type: Boolean, default: false },
+          name: { type: String, default: "" },
+          description: { type: String, default: "" },
+          photos: [{ type: String, default: [] }]
+        },
+        transportation: {
+          isIncluded: { type: Boolean, default: false },
+          car: {
+            isIncluded: { type: Boolean, default: false },
+            name: { type: String, default: "" },
+            category: { type: String, default: "" },
+            description: { type: String, default: "" },
+            departureTime: { type: String, default: "" },
+            photos: [{ type: String, default: [] }]
+          },
+          bus: {
+            isIncluded: { type: Boolean, default: false },
+            name: { type: String, default: "" },
+            category: { type: String, default: "" },
+            description: { type: String, default: "" },
+            departureTime: { type: String, default: "" },
+            photos: [{ type: String, default: [] }]
+          },
+          train: {
+            isIncluded: { type: Boolean, default: false },
+            name: { type: String, default: "" },
+            description: { type: String, default: "" },
+            departureTime: { type: String, default: "" },
+            photos: [{ type: String, default: [] }]
+          },
+          flight: {
+            isIncluded: { type: Boolean, default: false },
+            name: { type: String, default: "" },
+            description: { type: String, default: "" },
+            departureTime: { type: String, default: "" },
+            photos: [{ type: String, default: [] }]
+          }
+        },
+       
       },
     ],
   },
