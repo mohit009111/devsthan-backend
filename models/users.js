@@ -50,7 +50,14 @@ const userSchema = new mongoose.Schema({
   profilePic: {
     type: String,
   },
- 
+  isVerified: {
+    type:Boolean,
+    default:false
+  },
+  otp: {
+    type: String, // OTP is usually stored as a string
+   
+  },
   wishlist: [
     {
       type: String,

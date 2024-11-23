@@ -61,10 +61,10 @@ db.once('open', () => {
 });
 app.use(cors());
 app.use(bodyParser.json());
-app.post('/user/signup', authRouter.signup);
+app.post('/api/user/signup', authRouter.signup);
 app.post('/user/login', authRouter.login);
-app.post('/expert/signup', authRouter.vendorSignup);
-app.post('/expert/login', authRouter.vendorLogin);
+
+app.post('/api/user/verify-otp', authRouter.verifyOtp);
 app.post('/api/createTours', upload.fields([
   { name: 'bannerImage', maxCount: 1 },  // Single file upload for banner image
   { name: 'images', maxCount: 10 },

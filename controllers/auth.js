@@ -2,8 +2,7 @@ const User = require("../models/users.js");
 const Vendor = require("../models/vendors.js");
 const bcrypt = require("bcryptjs")
 const otpGenerator = require("otp-generator");
-const twilio = require("twilio");
-const crypto = require("crypto-js");
+const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const { configDotenv } = require("dotenv");
 configDotenv();
@@ -11,161 +10,123 @@ const generateToken = (userId) => {
   return jwt.sign({ userId }, "okjnlk", { expiresIn: "1h" });
 };
 
-const vendorLogin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
 
-    // Check if email exists
-    const existingVendor = await Vendor.findOne({ email });
-    if (!existingVendor) {
-      return res.status(400).json({ message: "Vendor not found. Please sign up." });
-    }
-
-    // Validate password
-    const isPasswordValid = await bcrypt.compare(password, existingVendor.password);
-    if (!isPasswordValid) {
-      return res.status(400).json({ message: "Invalid email or password." });
-    }
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: existingVendor._id, email: existingVendor.email },
-      process.env.JWT_SECRET, // Ensure you have a secret in your .env file
-      { expiresIn: "1h" } // Token expires in 1 hour
-    );
-
-    // Send the response with the token
-    res.status(200).json({
-      message: "Login successful",
-      token, // Return the JWT token
-      vendor: {
-        id: existingVendor._id,
-        email: existingVendor.email,
-        firstName: existingVendor.firstName,
-        lastName: existingVendor.lastName,
-        verified: existingVendor.verified
-      },
-    });
-  } catch (error) {
-    console.error("Error during login:", error);
-    res.status(500).json({ message: "Internal server error." });
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
-};
-
-const vendorSignup = async (req, res) => {
-  try {
-    const {
-     
-      confirmPassword,
-      email,
-      firstName,
-      lastName,
-      password,
-      phone,
-      verified
-    } = req.body;
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({ error: "Passwords do not match" });
-    }
-    const existingUser = await Vendor.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: "User with this email already exists" });
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create the new user/vendor
-    const newUser = new Vendor({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      phone,
-      verified
-    });
-
-    const savedUser = await newUser.save();
-
-    // Generate a JWT
-    const token = jwt.sign(
-      { userId: savedUser._id}, // Payload
-      process.env.JWT_SECRET, // Secret key
-      { expiresIn: "1h" } // Token expiry
-    );
-
-    // Send the response with the token
-    res.status(201).json({
-      message: "User created successfully",
-      user: savedUser,
-      token, // Include token in the response
-    });
-  } catch (error) {
-    console.error("Error signing up:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
+});
 
 const signup = async (req, res) => {
   try {
-    const {
-      confirmPassword,
-      email,
-      firstName,
-      lastName,
-      password,
-      accountType,
-      phone,
-    } = req.body;
-    let UserModel;
-
-    if (accountType === "user") {
-      UserModel = User;
-    } else if (accountType === "vendor") {
-      UserModel = Vendor;
-    } else {
-      return res.status(400).json({ error: "Invalid account type" });
-    }
+    const { name, email, password, confirmPassword, phone } = req.body;
 
     if (password !== confirmPassword) {
       return res.status(400).json({ error: "Passwords do not match" });
     }
-    const existingUser = await UserModel.findOne({ email });
 
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ error: "User with this email already exists" });
-    } else {
-      // const hashedPassword = crypto.SHA256(password).toString(crypto.enc.Hex);
-      const otp = otpGenerator.generate(6, {
-        upperCase: false,
-        specialChars: false,
-        alphabets: false,
-      });
-
-      const newUser = new UserModel({
-        firstName,
-        lastName,
-        email,
-        // password: hashedPassword,
-        password,
-        accountType,
-        confirmPassword,
-        phone,
-      });
-
-      const savedUser = await newUser.save();
-
-      res
-        .status(201)
-        .json({ message: "User created successfully", user: savedUser });
+      return res.status(400).json({ error: "User with this email already exists" });
     }
+
+    // Generate OTP
+    const otp = otpGenerator.generate(6, {
+      upperCase: false,
+      specialChars: false,
+      alphabets: false,
+    });
+
+    // Save user with OTP and mark as unverified
+    const newUser = new User({
+      name,
+      email,
+      password, // Ideally, hash this password before saving
+      phone,
+      otp,
+      isVerified: false,
+    });
+
+    await newUser.save();
+
+    // Email options
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Verify Your Account - OTP",
+      text: `Hello ${name},\n\nThank you for signing up on our platform. To verify your account, please use the following OTP:\n\nOTP: ${otp}\n\nThis OTP will expire in 10 minutes. Please do not share this OTP with anyone.\n\nBest regards,\nDevsthan Expert`,
+    };
+
+    // Send email with OTP
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        return res.status(500).json({ error: "Error sending OTP email." });
+      }
+      console.log("Email sent:", info.response);
+    });
+
+    res.status(201).json({
+      success:true,
+      message: "User registered successfully. Please verify OTP sent to your email.",
+      email,
+    });
   } catch (error) {
-    console.error("Error signing up:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Signup error:", error);
+    
+    res.status(500).json({ success:false,error: "Internal server error" });
   }
 };
+
+const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+console.log(email,otp)
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if the provided OTP matches the stored OTP
+    if (user.otp !== otp) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // Mark the user as verified and clear the OTP
+    user.isVerified = true;
+    user.otp = null; // Clear OTP after verification
+    await user.save();
+
+    // Generate a JWT token
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' } // Token expires in 1 hour
+    );
+
+    // Return user details and token
+    res.status(200).json({
+      success:true,
+      message: "OTP verified successfully. Redirecting to home page.",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      },
+      token,
+    });
+  } catch (error) {
+    // console.error("OTP verification error:", error);
+    res.status(500).json({ success:false,error: "Internal server error" });
+  }
+};
+
+
 const login = async (req, res) => {
   try {
     const { email, password, accountType } = req.body;
@@ -274,7 +235,7 @@ module.exports = {
   signup,
   login,
   updateUser,
+  verifyOtp,
   getUser,
-  vendorSignup,
-  vendorLogin
+ 
 };
