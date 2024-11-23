@@ -151,6 +151,6 @@ app.get('/', (req, res) => {
   res.send('Hello, Express with MongoDB!');
 });
 
-app.listen(port, '127.0.0.1', () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Server is running on port ${port}`);
 });
