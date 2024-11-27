@@ -6,6 +6,7 @@ const wishlist = require('./controllers/wishlist.js')
 const blogs = require('./controllers/blogs.js')
 const authRouter = require('./controllers/auth.js');
 const tourController = require('./controllers/tour.js')
+const banners = require('./controllers/banners.js')
 const destinations = require('./controllers/destinations.js')
 const categegories = require('./controllers/categories.js')
 const attributes = require('./controllers/attributes.js')
@@ -62,7 +63,7 @@ db.once('open', () => {
 app.use(cors());
 app.use(bodyParser.json());
 app.post('/api/user/signup', authRouter.signup);
-app.post('/user/login', authRouter.login);
+app.post('/api/user/login', authRouter.login);
 
 app.post('/api/user/verify-otp', authRouter.verifyOtp);
 app.post('/api/createTours', upload.fields([
@@ -146,6 +147,12 @@ app.put('/api/updateWhyChoose/:WhyChoose', whyChoose.updateWhyChoose);
 
 app.get('/api/getAllWhyChoose', whyChoose.getAllWhyChoose);
 
+
+app.post('/api/addBannerImages', banners.addBanner);
+app.delete('/api/deleteBannerImage', banners.deleteBanner);
+
+
+app.get('/api/getBanner', banners.getAllBannerImages);
 
 app.get('/', (req, res) => {
   res.send('Hello, Express with MongoDB!');

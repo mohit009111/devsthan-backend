@@ -83,7 +83,7 @@ const signup = async (req, res) => {
 const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-console.log(email,otp)
+
     // Find the user by email
     const user = await User.findOne({ email });
 
@@ -98,7 +98,7 @@ console.log(email,otp)
 
     // Mark the user as verified and clear the OTP
     user.isVerified = true;
-    user.otp = null; // Clear OTP after verification
+    user.otp = null; 
     await user.save();
 
     // Generate a JWT token
@@ -129,48 +129,56 @@ console.log(email,otp)
 
 const login = async (req, res) => {
   try {
-    const { email, password, accountType } = req.body;
-
-    let UserModel;
-
-    if (accountType === "user") {
-      UserModel = User;
-    } else if (accountType === "vendor") {
-      UserModel = Vendor;
-    } else {
-      return res.status(400).json({ error: "Invalid account type" });
-    }
-
-    const existingUser = await UserModel.findOne({ email });
+    const { email} = req.body;
+console.log(email)
+    const existingUser = await User.findOne({ email });
 
     if (!existingUser) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const passwordsMatch = password == existingUser.password;
 
-    if (!passwordsMatch) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    const token = generateToken(existingUser._id);
-
-    const { firstName, lastName, _id } = existingUser;
-
-    res.status(200).json({
-      message: "Login successful",
-      token,
-      accountType,
-      _id,
-      user: {
-        firstName,
-        lastName,
-      },
+    // Generate OTP
+    const otp = otpGenerator.generate(6, {
+      upperCase: false,
+      specialChars: false,
+      alphabets: false,
     });
+
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 minutes
+
+    // Save OTP and expiration time in the User model
+    existingUser.otp = otp;
+    existingUser.otpExpiresAt = otpExpiresAt;
+    await existingUser.save();
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Verify Your Account - OTP",
+      text: `Hello ${existingUser.name},\n\nTo verify your login, please use the following OTP:\n\nOTP: ${otp}\n\nThis OTP will expire in 10 minutes. Please do not share this OTP with anyone.\n\nBest regards,\nDevsthan Expert`,
+    };
+
+    // Send email with OTP
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        return res.status(500).json({ error: "Error sending OTP email." });
+      }
+      console.log("Email sent:", info.response);
+    });
+    res.status(201).json({
+      success:true,
+      message: "OTP sent. Please verify to continue.",
+      email,
+    });
+   
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 const getUser = async (req, res) => {
   try {
