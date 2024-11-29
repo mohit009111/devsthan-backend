@@ -40,7 +40,8 @@ const tourDetailsSchema = new mongoose.Schema({
     pricing: [
       {
         day: Number,
-        price: Number
+        price: Number,
+        rooms: Number
       }
     ],
     cancellationPolicy: { type: String },
@@ -84,26 +85,26 @@ const tourDetailsSchema = new mongoose.Schema({
           roomCategory: { type: String, default: "" },
           roomImages: [{ type: String, default: [] }],
           location: { type: String, default: "" },
-          beds:{
+          beds: {
             doubleBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
             tripleBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
             fourBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
             fiveBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
             sixBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
           }
         },
@@ -113,7 +114,7 @@ const tourDetailsSchema = new mongoose.Schema({
           price: { type: String, default: "" },
           photos: [{ type: String, default: [] }]
         },
-       
+
         siteSeen: {
           isAvailable: { type: Boolean, default: false },
           name: { type: String, default: "" },
@@ -153,7 +154,7 @@ const tourDetailsSchema = new mongoose.Schema({
             photos: [{ type: String, default: [] }]
           }
         },
-      
+
       },
     ],
   },
@@ -162,7 +163,8 @@ const tourDetailsSchema = new mongoose.Schema({
     pricing: [
       {
         day: Number,
-        price: Number
+        price: Number,
+        rooms: Number
       }
     ],
     cancellationPolicy: { type: String },
@@ -206,26 +208,26 @@ const tourDetailsSchema = new mongoose.Schema({
           roomCategory: { type: String, default: "" },
           roomImages: [{ type: String, default: [] }],
           location: { type: String, default: "" },
-          beds:{
+          beds: {
             doubleBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
             tripleBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
             fourBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
             fiveBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
             sixBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
           }
         },
@@ -235,7 +237,7 @@ const tourDetailsSchema = new mongoose.Schema({
           price: { type: String, default: "" },
           photos: [{ type: String, default: [] }]
         },
-       
+
         siteSeen: {
           isAvailable: { type: Boolean, default: false },
           name: { type: String, default: "" },
@@ -275,7 +277,7 @@ const tourDetailsSchema = new mongoose.Schema({
             photos: [{ type: String, default: [] }]
           }
         },
-       
+
       },
     ],
   },
@@ -284,7 +286,8 @@ const tourDetailsSchema = new mongoose.Schema({
     pricing: [
       {
         day: Number,
-        price: Number
+        price: Number,
+        rooms: Number
       }
     ],
     cancellationPolicy: { type: String },
@@ -328,26 +331,26 @@ const tourDetailsSchema = new mongoose.Schema({
           roomCategory: { type: String, default: "" },
           roomImages: [{ type: String, default: [] }],
           location: { type: String, default: "" },
-          beds:{
+          beds: {
             doubleBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
             tripleBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
             fourBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
             fiveBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
             sixBed: {
-              price: { type: String},
-              extraBedPrice:{ type: String },
+              price: { type: String },
+              extraBedPrice: { type: String },
             },
           }
         },
@@ -357,7 +360,7 @@ const tourDetailsSchema = new mongoose.Schema({
           price: { type: String, default: "" },
           photos: [{ type: String, default: [] }]
         },
-       
+
         siteSeen: {
           isAvailable: { type: Boolean, default: false },
           name: { type: String, default: "" },
@@ -397,7 +400,7 @@ const tourDetailsSchema = new mongoose.Schema({
             photos: [{ type: String, default: [] }]
           }
         },
-       
+
       },
     ],
   },
