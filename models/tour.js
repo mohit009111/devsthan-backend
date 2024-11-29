@@ -41,7 +41,8 @@ const tourDetailsSchema = new mongoose.Schema({
       {
         day: Number,
         price: Number,
-        rooms: Number
+        rooms: Number,
+        person: Number
       }
     ],
     cancellationPolicy: { type: String },
@@ -164,7 +165,8 @@ const tourDetailsSchema = new mongoose.Schema({
       {
         day: Number,
         price: Number,
-        rooms: Number
+        rooms: Number,
+        person: Number
       }
     ],
     cancellationPolicy: { type: String },
@@ -287,7 +289,8 @@ const tourDetailsSchema = new mongoose.Schema({
       {
         day: Number,
         price: Number,
-        rooms: Number
+        rooms: Number,
+        person: Number
       }
     ],
     cancellationPolicy: { type: String },
