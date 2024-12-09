@@ -9,8 +9,11 @@ const tourController = require('./controllers/tour.js')
 const banners = require('./controllers/banners.js')
 const destinations = require('./controllers/destinations.js')
 const categegories = require('./controllers/categories.js')
+const cart = require('./controllers/cart.js')
 const attributes = require('./controllers/attributes.js')
 const contacts = require('./controllers/contact.js')
+const customizedQuesry = require('./controllers/customizedQuery.js')
+const payment = require('./controllers/payment.js')
 // const imageUploader=require('./controllers/tour.js')
 const imageUploader = require('./controllers/cloudinary.js')
 const testimonials = require('./controllers/testimonials.js')
@@ -124,7 +127,13 @@ app.get('/api/categories', categegories.getCategories)
 app.post('/api/createInquiry', contacts.createInquiryOrContact)
 app.get('/api/getAllInquiries', contacts.getAllInquiries)
 app.get('/api/getAllContacts', contacts.getAllContacts)
+app.put('/api/markAsReadOrUnread', contacts.markAsReadOrUnread);
+
+
 app.delete('/api/categories/:id', categegories.deleteCategory)
+
+
+
 
 app.post('/api/attributes', attributes.createAttribute)
 app.get('/api/attributes', attributes.getAttributes)
@@ -139,21 +148,26 @@ app.delete('/api/deleteBlog/:blog', blogs.deleteBlog);
 app.put('/api/updateBlog/:blog', blogs.updateBlog);
 app.get('/api/getBlogById/:blog', blogs.getBlogById);
 app.get('/api/getAllBlogs', blogs.getAllBlogs);
-
-
 app.post('/api/createWhyChoose', whyChoose.createWhyChoose);
 app.delete('/api/deleteWhyChoose/:WhyChoose', whyChoose.deleteWhyChoose);
 app.put('/api/updateWhyChoose/:WhyChoose', whyChoose.updateWhyChoose);
-
 app.get('/api/getAllWhyChoose', whyChoose.getAllWhyChoose);
-
-
 app.post('/api/addBannerImages', banners.addBanner);
 app.delete('/api/deleteBannerImage', banners.deleteBanner);
-
-
 app.get('/api/getBanner', banners.getAllBannerImages);
+app.get('/api/getAllCustomizedQuery', customizedQuesry.getCustomizedQuesry);
+app.post('/api/customizedQuery', customizedQuesry.createCustomizedQuesry);
+app.delete('/api/customizedQuery/:id', customizedQuesry.deleteCustomizedQuesry);
+app.put('/api/customizedQuery/:id', customizedQuesry.editCustomizedQuesry);
 
+
+app.post('/api/addToCart', cart.addToCart)
+app.post('/api/getCart', cart.getCart)
+
+
+app.post('/paymentCalculate', payment.paymentCalculate);
+app.post('/create-order', payment.createOrder);
+app.post('/verify-payment', payment.verifyPayment);
 app.get('/', (req, res) => {
   res.send('Hello, Express with MongoDB!');
 });

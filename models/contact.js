@@ -21,6 +21,7 @@ const contactSchema = new mongoose.Schema({
     required: true,
     match: [/^\d{10}$/, 'Please enter a valid 10-digit phone number'],
   },
+  read: { type: Boolean, default: false },
  
 }, {
   timestamps: true, 

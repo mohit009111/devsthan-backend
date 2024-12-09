@@ -8,6 +8,8 @@ const tourDetailsSchema = new mongoose.Schema({
   duration: { type: String },
   transportation: { type: Boolean, default: false },
   groupSize: { type: String },
+  termsAndConditions: { type: String },
+  
   availableDates: { type: String },
   departureDetails: { type: String },
   knowBeforeYouGo: [{ type: String }],

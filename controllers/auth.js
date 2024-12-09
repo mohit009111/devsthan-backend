@@ -19,8 +19,10 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+
 const signup = async (req, res) => {
   try {
+
     const { name, email, password, confirmPassword, phone } = req.body;
 
     if (password !== confirmPassword) {
@@ -105,7 +107,7 @@ const verifyOtp = async (req, res) => {
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' } // Token expires in 1 hour
+      { expiresIn: '24h' } // Token expires in 1 hour
     );
 
     // Return user details and token

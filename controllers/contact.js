@@ -35,8 +35,7 @@ const createInquiryOrContact = async (req, res) => {
       if (!tour) {
         return res.status(404).json({ error: 'Tour not found' });
       }
-      console.log("Tour found:", tour);
-
+    
       // Save inquiry or contact data
       savedData = await Inquiry.create({ fullName, email, message, phone, uuid });
     } else {
@@ -101,16 +100,67 @@ const createInquiryOrContact = async (req, res) => {
   }
 };
 
+const markAsReadOrUnread = async (req, res) => {
+  try {
+    const { id, readStatus } = req.body;  // Get the id and readStatus from request body
+
+    if (typeof readStatus !== 'boolean') {
+      return res.status(400).json({ error: 'readStatus must be a boolean' });
+    }
+
+    let updatedData;
+
+    // Check if the ID belongs to an Inquiry or Contact and update accordingly
+    if (id) {
+      // Check Inquiry collection first
+      updatedData = await Inquiry.findByIdAndUpdate(
+        id,
+        { read: readStatus },
+        { new: true }
+      );
+
+      if (!updatedData) {
+        // If not found in Inquiry, try Contact
+        updatedData = await Contact.findByIdAndUpdate(
+          id,
+          { read: readStatus },
+          { new: true }
+        );
+      }
+
+      if (!updatedData) {
+        return res.status(404).json({ error: 'Inquiry or Contact not found' });
+      }
+
+      // Return the updated data
+      res.status(200).json({ success: true, data: updatedData });
+    } else {
+      return res.status(400).json({ error: 'ID is required' });
+    }
+  } catch (error) {
+    console.error('Error updating read status:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
 
 const getAllInquiries = async (req, res) => {
   try {
     const inquiries = await Inquiry.find().sort({ createdAt: -1 });
 
-    // Format the createdAt field for each inquiry
-    const formattedInquiries = inquiries.map(inquiry => ({
-      ...inquiry.toObject(),
-      createdAt: new Date(inquiry.createdAt).toLocaleString()
-    }));
+    // Fetch the tour name for each inquiry by uuid
+    const formattedInquiries = await Promise.all(
+      inquiries.map(async (inquiry) => {
+        console.log("in",inquiry)
+        const tour = await Tour.findOne({  uuid:inquiry.uuid }); 
+        const tourName = tour ? tour.name : 'Unknown Tour';  // Default to 'Unknown Tour' if tour not found
+console.log("tour",tour)
+        return {
+          ...inquiry.toObject(),
+          createdAt: new Date(inquiry.createdAt).toLocaleString(),
+          tourName,
+        };
+      })
+    );
 
     res.status(200).json({ success: true, data: formattedInquiries });
   } catch (error) {
@@ -118,6 +168,7 @@ const getAllInquiries = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
 
 const getAllContacts = async (req, res) => {
   try {
@@ -139,5 +190,6 @@ const getAllContacts = async (req, res) => {
 module.exports = {
   createInquiryOrContact,
   getAllInquiries,
-  getAllContacts
+  getAllContacts,
+  markAsReadOrUnread
 };

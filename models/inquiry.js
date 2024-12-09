@@ -25,6 +25,7 @@ const InquirySchema = new mongoose.Schema({
     type: String,
     default: null, 
   },
+  read: { type: Boolean, default: false },
 }, {
   timestamps: true, 
 });

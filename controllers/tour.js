@@ -41,6 +41,7 @@ const createTour = async (req, res) => {
       country,
       city,
       state,
+      termsAndConditions,
       images,
       bannerImage,
     } = tourData;
@@ -84,6 +85,7 @@ const createTour = async (req, res) => {
       tour.location = location;
       tour.duration = duration;
       tour.groupSize = groupSize;
+      tour.termsAndConditions=termsAndConditions;
       tour.cancellationPolicy = cancellationPolicy;
       tour.availableDates = availableDates;
       tour.languages = Array.isArray(languages) ? languages : [languages];
@@ -116,7 +118,7 @@ const createTour = async (req, res) => {
         duration,
         groupSize,
         cancellationPolicy,
-     
+        termsAndConditions,
         availableDates,
         languages: Array.isArray(languages) ? languages : [languages],
         departureDetails,
