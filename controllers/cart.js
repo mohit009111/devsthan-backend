@@ -106,35 +106,52 @@ const addToCart = async (req, res) => {
 };
 const getCart = async (req, res) => {
   try {
-    const {token}=req.body
-    // Step 1: Extract token from headers (or body, if you send it in the request body)
+    const { token, userTempId } = req.body;
 
-
-    if (!token) {
-      return res.status(401).json({ message: 'Token is missing, please log in.' });
+    // Check if either token or userTempId is provided
+    if (!token && !userTempId) {
+      return res.status(400).json({ message: 'Token or userTempId is required.' });
     }
 
-    const decoded = jwt.verify(token, SECRET_KEY);
-    userId = decoded.id || decoded.userId;
-    console.log("decoded id",decoded)
-   
-    const cart = await Cart.findOne({ userId }).sort({ addedAt: -1 });
-console.log(cart)
-const tourId=cart.tourId
-const tour = await Tour.findOne({ uuid: tourId });
-console.log(tour)
+    let cart;
+    let tour;
+
+    if (userTempId) {
+      cart = await Cart.findOne({ userTempId }).sort({ addedAt: -1 });
+      if (cart) {
+        const tourId = cart.tourId;
+        tour = await Tour.findOne({ uuid: tourId });
+      }
+    } else if (token) {
+      const decoded = jwt.verify(token, SECRET_KEY);
+      const userId = decoded.id || decoded.userId;
+
+      cart = await Cart.findOne({ userId }).sort({ addedAt: -1 });
+      if (cart) {
+        const tourId = cart.tourId;
+        tour = await Tour.findOne({ uuid: tourId });
+      }
+    }
+
     if (!cart) {
-      return res.status(404).json({ message: 'No cart items found for this user.' });
+      return res.status(404).json({ message: 'No cart items found.' });
     }
-    return res.status(200).json({ success: true, cart, tour: {
-      bannerImage: tour.bannerImage,
-      name: tour.name,
-    },});
 
+    return res.status(200).json({
+      success: true,
+      cart,
+      tour: tour ? {
+        bannerImage: tour.bannerImage,
+        name: tour.name,
+      } : null,
+    });
   } catch (error) {
     console.error('Error fetching cart:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+
+
 
 module.exports = { addToCart,getCart };

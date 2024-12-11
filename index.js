@@ -167,7 +167,9 @@ app.post('/api/getCart', cart.getCart)
 
 app.post('/paymentCalculate', payment.paymentCalculate);
 app.post('/create-order', payment.createOrder);
+app.get('/api/getOrder', payment.getOrder);
 app.post('/verify-payment', payment.verifyPayment);
+
 app.get('/', (req, res) => {
   res.send('Hello, Express with MongoDB!');
 });

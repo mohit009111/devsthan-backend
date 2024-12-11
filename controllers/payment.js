@@ -176,7 +176,26 @@ console.log(userId)
         });
     }
 };
-
+const getOrder = async (req, res) => {
+    try {
+     
+      const orders = await Orders.find({}).sort({ createdAt: -1 });
+  
+     
+      return res.status(200).json({
+        success: true,
+        data: orders,
+      });
+    } catch (error) {
+      // Handle any errors during the fetching process
+      console.error("Error fetching orders:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch orders. Please try again later.",
+      });
+    }
+  };
+  
 const verifyPayment = async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
@@ -213,4 +232,4 @@ const verifyPayment = async (req, res) => {
 
 // Export the function for use in routes
 
-module.exports = { paymentCalculate, verifyPayment, createOrder };
+module.exports = { paymentCalculate, verifyPayment, createOrder ,getOrder};
