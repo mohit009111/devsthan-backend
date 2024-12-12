@@ -1,17 +1,19 @@
 // Import necessary modules
 const Razorpay = require('razorpay');
-require('dotenv').config();
+
 const Tour = require('../models/tour');
 const Users = require('../models/users');
 const crypto = require('crypto');
 const Orders = require('../models/orders')
 const Cart = require('../models/cart');
+require('dotenv').config();
+const nodemailer = require("nodemailer");
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY, // Replace with your Razorpay Key ID
     key_secret: process.env.RAZORPAY_SECRET // Replace with your Razorpay Key Secret
 });
-
+console.log(process.env.EMAIL_PASS)
 // POST API to create an order
 const paymentCalculate = async (req, res) => {
     try {
@@ -61,9 +63,9 @@ const paymentCalculate = async (req, res) => {
 
 
         const options = {
-            amount: Math.round(totalPrice) * 100, // Convert amount to paisa (smallest currency unit)
+            amount: Math.round(totalPrice) * 100, 
             currency: "INR",
-            payment_capture: 1, // Auto capture payments
+            payment_capture: 1,
         };
 
         const order = await razorpay.orders.create(options);
@@ -83,15 +85,16 @@ const paymentCalculate = async (req, res) => {
     }
 };
 
+
+
 const createOrder = async (req, res) => {
     try {
         // Extract data from request body
-        const { tourId, userId, category, address, mobile, email, rooms,username } = req.body;
-console.log(userId)
-        const user = await Users.findOne({ userId })
-       
+        const { tourId, userId, category, address, mobile, email, rooms, username } = req.body;
+
+        const user = await Users.findOne({ userId });
+
         const cart = await Cart.findOne({ userId }).sort({ addedAt: -1 });
-        console.log("cart",cart)
         if (!cart) {
             return res.status(404).json({ success: false, message: "Cart not found" });
         }
@@ -103,7 +106,11 @@ console.log(userId)
         }
 
         // Check if user already has a booking for this tour
-        const existingOrder = await Orders.findOne({ userId: userId, tourId: tourId, paymentStatus: { $ne: "failed" } });
+        const existingOrder = await Orders.findOne({
+            userId: userId,
+            tourId: tourId,
+            paymentStatus: { $ne: "failed" },
+        });
         if (existingOrder) {
             return res.status(400).json({
                 success: false,
@@ -111,7 +118,6 @@ console.log(userId)
             });
         }
 
-        // Process the new order creation...
         const { adults, children } = cart;
         const totalPeople = adults + children;
         const childPriceFactor = 0.5;
@@ -138,16 +144,14 @@ console.log(userId)
             });
         }
 
-        // Calculate the total price (price per person for adults and discounted price for children)
         const pricePerPerson = selectedPrice / totalPeople;
         const childPrice = pricePerPerson * childPriceFactor;
         const totalPrice = adults * pricePerPerson + children * childPrice;
 
         // Create a new order and save it to the database
         const order = new Orders({
-            
-          username,
-          userId,
+            username,
+            userId,
             tourId,
             category,
             totalPrice,
@@ -161,10 +165,46 @@ console.log(userId)
         });
         await order.save();
 
+        // Email setup
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.EMAIL_USER, // Your email address
+                pass: process.env.EMAIL_PASS, // Your email password
+            },
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Your Order is Placed - Awaiting Confirmation",
+            html: `
+                <h2>Thank you for your order, ${username}!</h2>
+                <p>Your order has been placed and is waiting for confirmation. Below are your order details:</p>
+                <h3>Order Details:</h3>
+                <ul>
+                    <li><strong>Tour Name:</strong> ${tour.name}</li>
+                    <li><strong>Category:</strong> ${category}</li>
+                    <li><strong>Total Price:</strong> $${totalPrice.toFixed(2)}</li>
+                    
+                    <li><strong>Address:</strong> ${address}</li>
+                    <li><strong>Mobile:</strong> ${mobile}</li>
+                </ul>
+                <p>We will notify you once your order is confirmed.</p>
+                <p>If you have any questions, feel free to contact us at <a href="mailto:${process.env.EMAIL_USER}">${process.env.EMAIL_USER}</a>.</p>
+                <p>Thank you for choosing us!</p>
+                <br>
+                <p>Best regards,</p>
+                <p><strong>Devsthan Expert Team</strong></p>
+            `,
+        };
+
+        await transporter.sendMail(mailOptions);
+
         // Respond with the created order
         return res.status(201).json({
             success: true,
-            message: "Order created successfully",
+            message: "Order created successfully. A confirmation email has been sent to your email address.",
             order,
         });
     } catch (error) {
@@ -176,6 +216,7 @@ console.log(userId)
         });
     }
 };
+
 const getOrder = async (req, res) => {
     try {
      

@@ -54,8 +54,7 @@ const editCustomizedQuesry = async (req, res) => {
     try {
         const { id } = req.params;
         const { read } = req.body;
-    console.log(id)
-    console.log(read)
+  
         const updatedQuery = await CustomizedQuery.findByIdAndUpdate(
           id,
           { read: read },
