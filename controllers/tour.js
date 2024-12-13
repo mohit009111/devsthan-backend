@@ -19,6 +19,11 @@ const createTour = async (req, res) => {
 
     // Destructure properties from the parsed tourData
     const {
+      welcomeDrinks,
+      transportation,
+      siteSeen,
+      meals,
+      hotel,
       uuid,
       name,
       overview,
@@ -37,7 +42,7 @@ const createTour = async (req, res) => {
       knowBeforeYouGo,
       fixedDates,
       openHours,
-      welcomeDrinks,
+      
       country,
       city,
       state,
@@ -80,6 +85,10 @@ const createTour = async (req, res) => {
     if (tour) {
       // Update the existing tour
       tour.name = name;
+      tour.transportation=transportation,
+      tour.siteSeen=siteSeen,
+      tour.meals=meals,
+      tour.hotel=hotel,
       tour.destinationId = destinationId;
       tour.overview = overview;
       tour.location = location;
@@ -132,6 +141,10 @@ const createTour = async (req, res) => {
         fixedDates,
         openHours,
         welcomeDrinks,
+        transportation,
+        siteSeen,
+        meals,
+        hotel,
         country,
         categories,
         city,
