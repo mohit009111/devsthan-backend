@@ -13,7 +13,65 @@ const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY, // Replace with your Razorpay Key ID
     key_secret: process.env.RAZORPAY_SECRET // Replace with your Razorpay Key Secret
 });
-console.log(process.env.EMAIL_PASS)
+const sendEmail = async (order, actionType) => {
+    let subject, htmlContent;
+  
+    if (actionType === 'Approved') {
+      subject = 'Tour Confirmation';
+      htmlContent = `
+        <h2>Tour Confirmed</h2>
+        <p>Dear ${order.username},</p>
+        <p>Your tour has been successfully confirmed!</p>
+        <p><strong>Details:</strong></p>
+        <ul>
+          <li><strong>Tour ID:</strong> ${order.tourId}</li>
+          <li><strong>Category:</strong> ${order.category}</li>
+          <li><strong>Total Price:</strong> $${order.totalPrice}</li>
+          <li><strong>Rooms:</strong>
+            <ul>
+              ${order.rooms
+                .map(
+                  (room) =>
+                    `<li>Room ${room.room} - Adults: ${room.adults}, Children: ${room.children}</li>`
+                )
+                .join('')}
+            </ul>
+          </li>
+        </ul>
+        <p>Thank you for choosing our services!</p>
+      `;
+    } else if (actionType === 'Rejected') {
+      subject = 'Tour Rejection';
+      htmlContent = `
+        <h2>Tour Rejected</h2>
+        <p>Dear ${order.username},</p>
+        <p>We regret to inform you that your tour has been rejected due to some issues.</p>
+        <p>If you have any questions, please contact us for further details.</p>
+        <p>Thank you for understanding.</p>
+      `;
+    }
+    const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.EMAIL_USER, 
+            pass: process.env.EMAIL_PASS, 
+        },
+    });
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: order.email,
+      subject,
+      html: htmlContent,
+    };
+  
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log(`${actionType} email sent successfully`);
+    } catch (error) {
+      console.error(`Error sending ${actionType} email:`, error);
+    }
+  };
 // POST API to create an order
 const paymentCalculate = async (req, res) => {
     try {
@@ -174,7 +232,7 @@ const createOrder = async (req, res) => {
             },
         });
 
-        const mailOptions = {
+        const userMailOptions  = {
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Your Order is Placed - Awaiting Confirmation",
@@ -198,8 +256,18 @@ const createOrder = async (req, res) => {
                 <p><strong>Devsthan Expert Team</strong></p>
             `,
         };
+        const adminMailOptions = {
+            from: process.env.EMAIL_USER,
+            to: process.env.ADMIN_EMAIL, // Replace with admin email address
+            subject: "New Order Placed",
+            text: `Dear Admin,\n\nA new order has been placed with the following details:\n\n- Username: ${username}\n- User ID: ${userId}\n- Tour: ${tour.name}\n- Category: ${category}\n- Total Price: $${totalPrice}\n- Email: ${email}\n- Mobile: ${mobile}\n- Address: ${address}\n\nPlease review the order and take the necessary action.\n\nBest regards,\nDevsthan Expert System`,
+        };
 
-        await transporter.sendMail(mailOptions);
+        // Send both emails
+        await transporter.sendMail(userMailOptions);
+        await transporter.sendMail(adminMailOptions);
+
+     
 
         // Respond with the created order
         return res.status(201).json({
@@ -217,6 +285,38 @@ const createOrder = async (req, res) => {
     }
 };
 
+const updateOrderStatus = async (req, res) => {
+    const { orderId, status } = req.body;
+
+  // Validation
+  if (!orderId || !status) {
+    return res.status(400).json({ message: 'Order ID and status are required' });
+  }
+
+  try {
+    // Find and update the order
+    const updatedOrder = await Orders.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (status === 'Approved' || status === 'Rejected') {
+        await sendEmail(updatedOrder, status);
+      }
+    res.status(200).json({
+      message: `Order status updated to ${status}`,
+      data: updatedOrder,
+    });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+  };
 const getOrder = async (req, res) => {
     try {
      
@@ -273,4 +373,4 @@ const verifyPayment = async (req, res) => {
 
 // Export the function for use in routes
 
-module.exports = { paymentCalculate, verifyPayment, createOrder ,getOrder};
+module.exports = { paymentCalculate, verifyPayment, createOrder ,getOrder,updateOrderStatus};

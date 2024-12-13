@@ -7,6 +7,12 @@ const tourDetailsSchema = new mongoose.Schema({
   location: { type: String, default: null },
   duration: { type: String },
   transportation: { type: Boolean, default: false },
+  meals: { type: Boolean, default: false },
+  hotel: { type: Boolean, default: false },
+  siteSeen: { type: Boolean, default: false },
+  welcomeDrinks: {
+    type: Boolean,default: false 
+  },
   groupSize: { type: String },
   termsAndConditions: { type: String },
   
@@ -35,9 +41,7 @@ const tourDetailsSchema = new mongoose.Schema({
     groupSize: { type: Number, default: 0 },
     maxPeople: { type: Number, default: 0 },
   },
-  welcomeDrinks: {
-    type: Boolean
-  },
+
   standardDetails: {
     pricing: [
       {
