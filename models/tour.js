@@ -6,12 +6,12 @@ const tourDetailsSchema = new mongoose.Schema({
   overview: { type: String, default: null },
   location: { type: String, default: null },
   duration: { type: String },
-  transportation: { type: Boolean, default: false },
-  meals: { type: Boolean, default: false },
-  hotel: { type: Boolean, default: false },
-  siteSeen: { type: Boolean, default: false },
+  transportation: { type: Boolean},
+  meals: { type: Boolean, },
+  hotel: { type: Boolean, },
+  siteSeen: { type: Boolean, },
   welcomeDrinks: {
-    type: Boolean,default: false 
+    type: Boolean,
   },
   groupSize: { type: String },
   termsAndConditions: { type: String },
