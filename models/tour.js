@@ -60,7 +60,7 @@ const tourDetailsSchema = new mongoose.Schema({
     itineraries: [
       {
         title: { type: String },
-        duration: { type: String },
+        duration: { type: Number },
         photos: [{ type: String }],
         description: { type: String },
         day: { type: Number },
