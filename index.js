@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const validateToken = require('./middleware/validation');
 const multer = require('multer');
 const wishlist = require('./controllers/wishlist.js')
 const blogs = require('./controllers/blogs.js')
@@ -161,7 +162,7 @@ app.delete('/api/customizedQuery/:id', customizedQuesry.deleteCustomizedQuesry);
 app.put('/api/customizedQuery/:id', customizedQuesry.editCustomizedQuesry);
 
 
-app.post('/api/addToCart', cart.addToCart)
+app.post('/api/addToCart',  cart.addToCart);
 app.post('/api/getCart', cart.getCart)
 
 
