@@ -65,6 +65,7 @@ const tourDetailsSchema = new mongoose.Schema({
         description: { type: String },
         day: { type: Number },
         meals: {
+          isAvailable:{ type: Boolean },
           breakfast: {
             isAvailable: { type: Boolean, default: false },
             name: { type: String, default: '' },
@@ -189,6 +190,7 @@ const tourDetailsSchema = new mongoose.Schema({
         description: { type: String },
         day: { type: Number },
         meals: {
+          isAvailable:{ type: Boolean },
           breakfast: {
             isAvailable: { type: Boolean, default: false },
             name: { type: String, default: '' },
@@ -313,7 +315,9 @@ const tourDetailsSchema = new mongoose.Schema({
         description: { type: String },
         day: { type: Number },
         meals: {
+          isAvailable:{ type: Boolean },
           breakfast: {
+            isAvailable:{ type: Boolean },
             isAvailable: { type: Boolean, default: false },
             name: { type: String, default: '' },
             photos: [{ type: String }]  // array of photo URLs
