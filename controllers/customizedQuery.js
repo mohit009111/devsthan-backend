@@ -1,8 +1,8 @@
 const CustomizedQuery = require('../models/customizedQuery.js');
-
+const axios = require('axios');
 // Function to create a new category
 const createCustomizedQuesry = async (req, res) => {
-    console.log(req)
+    
     try {
         const { name, email, mobileNumber, query, noOfAdult, noOfChild, uuid } = req.body;
 
@@ -23,6 +23,32 @@ const createCustomizedQuesry = async (req, res) => {
 
         await newQuery.save();
         res.status(201).json({ success: true, message: 'Query submitted successfully', data: newQuery });
+            const aisensyPayload = {
+              apiKey: process.env.AISENSY_API_KEY,
+              campaignName: "custom tour",
+              destination: mobileNumber,
+              userName: "Devsthan Expert",
+        
+              templateParams: [
+                name
+        
+              ]
+              ,
+              source: "whatsapp_inquiry_tour IMAGE",
+              buttons: [],
+              carouselCards: [],
+              location: {},
+              paramsFallbackValue: {}
+            };
+        
+            // Send WhatsApp message using Aisensy API
+            const aisensyResponse = await axios.post('https://backend.aisensy.com/campaign/t1/api/v2', aisensyPayload, {
+              headers: {
+                'Authorization': `Bearer ${aisensyPayload.apiKey}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            console.log('WhatsApp message sent via Aisensy:', aisensyResponse.data);
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Server Error', error });

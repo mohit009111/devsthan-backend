@@ -1,5 +1,6 @@
 // Import necessary modules
 const Razorpay = require('razorpay');
+const axios = require('axios');
 
 const Tour = require('../models/tour');
 const Users = require('../models/users');
@@ -10,9 +11,10 @@ require('dotenv').config();
 const nodemailer = require("nodemailer");
 
 const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY, // Replace with your Razorpay Key ID
-    key_secret: process.env.RAZORPAY_SECRET // Replace with your Razorpay Key Secret
+    key_id: process.env.RAZORPAY_KEY, 
+    key_secret: process.env.RAZORPAY_SECRET 
 });
+console.log(process.env.ADMIN_EMAIL)
 const sendEmail = async (order, actionType) => {
     let subject, htmlContent;
   
@@ -117,8 +119,9 @@ const paymentCalculate = async (req, res) => {
 
         const pricePerPerson = selectedPrice / totalPeople;
         const childPrice = pricePerPerson * childPriceFactor;
-        const totalPrice = adults * pricePerPerson + children * childPrice;
-
+        const price = adults * pricePerPerson + children * childPrice;
+        const gst = price * 0.05;
+        totalPrice=price+gst 
 
         const options = {
             amount: Math.round(totalPrice) * 100, 
@@ -148,7 +151,8 @@ const paymentCalculate = async (req, res) => {
 const createOrder = async (req, res) => {
     try {
         // Extract data from request body
-        const { tourId, userId, category, address, mobile, email, rooms, username } = req.body;
+        const { tourId, userId, category, address, mobile, email, rooms, username,date } = req.body;
+        console.log(email)
 
         const user = await Users.findOne({ userId });
 
@@ -204,7 +208,9 @@ const createOrder = async (req, res) => {
 
         const pricePerPerson = selectedPrice / totalPeople;
         const childPrice = pricePerPerson * childPriceFactor;
-        const totalPrice = adults * pricePerPerson + children * childPrice;
+        const price = adults * pricePerPerson + children * childPrice;
+        const gst = price * 0.05;
+        totalPrice=price+gst 
 
         // Create a new order and save it to the database
         const order = new Orders({
@@ -256,6 +262,7 @@ const createOrder = async (req, res) => {
                 <p><strong>Devsthan Expert Team</strong></p>
             `,
         };
+
         const adminMailOptions = {
             from: process.env.EMAIL_USER,
             to: process.env.ADMIN_EMAIL, // Replace with admin email address
@@ -264,11 +271,54 @@ const createOrder = async (req, res) => {
         };
 
         // Send both emails
-        await transporter.sendMail(userMailOptions);
-        await transporter.sendMail(adminMailOptions);
-
+        if (email) {
+            await transporter.sendMail(userMailOptions);
+        } else {
+            console.error("User email is missing. Skipping user email notification.");
+        }
+        
+        if (process.env.ADMIN_EMAIL) {
+            await transporter.sendMail(adminMailOptions);
+        } else {
+            console.error("Admin email is missing. Skipping admin email notification.");
+        }
      
+  const aisensyPayload = {
+              apiKey: process.env.AISENSY_API_KEY,
+              campaignName: "orderplaced",
+              destination: mobile,
+              userName: "Devsthan Expert",
+        
+              templateParams: [
+                username,
+                tour.name,
+                tour.name,
+                `${tour.duration} days / ${tour.duration - 1} nights`,
+                date,
+                tour.location
 
+              ]
+              ,
+              media: {
+                type: "image", // Specify the media type
+                url: tour?.bannerImage || "", // Publicly accessible URL of the image
+                filename: "banner.jpg", // Include a filename if required by the API
+              },
+              source: "whatsapp_inquiry_tour IMAGE",
+              buttons: [],
+              carouselCards: [],
+              location: {},
+              paramsFallbackValue: {}
+            };
+        
+            // Send WhatsApp message using Aisensy API
+            const aisensyResponse = await axios.post('https://backend.aisensy.com/campaign/t1/api/v2', aisensyPayload, {
+              headers: {
+                'Authorization': `Bearer ${aisensyPayload.apiKey}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            console.log('WhatsApp message sent via Aisensy:', aisensyResponse.data);
         // Respond with the created order
         return res.status(201).json({
             success: true,

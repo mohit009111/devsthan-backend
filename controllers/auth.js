@@ -3,6 +3,7 @@ const Vendor = require("../models/vendors.js");
 const bcrypt = require("bcryptjs")
 const otpGenerator = require("otp-generator");
 const nodemailer = require("nodemailer");
+const axios = require('axios');
 const jwt = require("jsonwebtoken");
 const { configDotenv } = require("dotenv");
 configDotenv();
@@ -67,7 +68,6 @@ const signup = async (req, res) => {
         console.error("Error sending email:", error);
         return res.status(500).json({ error: "Error sending OTP email." });
       }
-      console.log("Email sent:", info.response);
     });
 
     res.status(201).json({
@@ -84,7 +84,7 @@ const signup = async (req, res) => {
 
 const verifyOtp = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const { email, otp ,phone,name} = req.body;
 
     // Find the user by email
     const user = await User.findOne({ email });
@@ -109,7 +109,32 @@ const verifyOtp = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '24h' } // Token expires in 1 hour
     );
-
+     const aisensyPayload = {
+              apiKey: process.env.AISENSY_API_KEY,
+              campaignName: "welcome",
+              destination: phone,
+              userName: "Devsthan Expert",
+        
+              templateParams: [
+                name
+        
+              ]
+              ,
+              source: "whatsapp_inquiry_tour IMAGE",
+              buttons: [],
+              carouselCards: [],
+              location: {},
+              paramsFallbackValue: {}
+            };
+        
+            // Send WhatsApp message using Aisensy API
+            const aisensyResponse = await axios.post('https://backend.aisensy.com/campaign/t1/api/v2', aisensyPayload, {
+              headers: {
+                'Authorization': `Bearer ${aisensyPayload.apiKey}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            console.log('WhatsApp message sent via Aisensy:', aisensyResponse.data);
     // Return user details and token
     res.status(200).json({
       success:true,
@@ -123,7 +148,6 @@ const verifyOtp = async (req, res) => {
       token,
     });
   } catch (error) {
-    // console.error("OTP verification error:", error);
     res.status(500).json({ success:false,error: "Internal server error" });
   }
 };
@@ -132,7 +156,6 @@ const verifyOtp = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email} = req.body;
-console.log(email)
     const existingUser = await User.findOne({ email });
 
     if (!existingUser) {

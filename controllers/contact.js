@@ -1,7 +1,7 @@
 const Inquiry = require('../models/inquiry');
 const Contact = require('../models/contact');
 const axios = require('axios');
-const Tour =require('../models/tour')
+const Tour = require('../models/tour')
 require('dotenv').config();
 const nodemailer = require("nodemailer");
 const { updateTour } = require('./tour');
@@ -19,7 +19,7 @@ const createInquiryOrContact = async (req, res) => {
   try {
     const { fullName, email, message, phone, uuid } = req.body;
 
-   
+
 
     if (!fullName || !email || !message || !phone) {
       return res.status(400).json({ error: 'Full Name, Email, Message, and Phone are required' });
@@ -35,7 +35,7 @@ const createInquiryOrContact = async (req, res) => {
       if (!tour) {
         return res.status(404).json({ error: 'Tour not found' });
       }
-    
+
       // Save inquiry or contact data
       savedData = await Inquiry.create({ fullName, email, message, phone, uuid });
     } else {
@@ -44,7 +44,7 @@ const createInquiryOrContact = async (req, res) => {
 
     // Prepare dynamic template params
 
- 
+
     // Email options
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -65,18 +65,21 @@ const createInquiryOrContact = async (req, res) => {
     // Aisensy WhatsApp API Payload
     const aisensyPayload = {
       apiKey: process.env.AISENSY_API_KEY,
-      campaignName: "whatsappp",
-      destination: phone.startsWith('91') ? phone : `91${phone}`,
-      userName: "Devsthan expert chatbot",
+      campaignName: "contact",
+      destination: phone,
+      userName: "Devsthan Expert",
+
       templateParams: [
-        { name: '1', value: String(fullName) || 'N/A' },
-        { name: '2', value: String(tour.location) || 'N/A' },
-        { name: '3', value: String(tour.name) || 'N/A' },
-        { name: '4', value: String(tour.duration) || 'N/A' }
+        fullName
+
       ]
-,      
+      ,
       source: "whatsapp_inquiry_tour IMAGE",
-      media: {},
+      media: {
+        type: "image", // Specify the media type
+        url: tour?.bannerImage || "", // Publicly accessible URL of the image
+        filename: "banner.jpg", // Include a filename if required by the API
+      },
       buttons: [],
       carouselCards: [],
       location: {},
@@ -150,10 +153,10 @@ const getAllInquiries = async (req, res) => {
     // Fetch the tour name for each inquiry by uuid
     const formattedInquiries = await Promise.all(
       inquiries.map(async (inquiry) => {
-        console.log("in",inquiry)
-        const tour = await Tour.findOne({  uuid:inquiry.uuid }); 
+        console.log("in", inquiry)
+        const tour = await Tour.findOne({ uuid: inquiry.uuid });
         const tourName = tour ? tour.name : 'Unknown Tour';  // Default to 'Unknown Tour' if tour not found
-console.log("tour",tour)
+        console.log("tour", tour)
         return {
           ...inquiry.toObject(),
           createdAt: new Date(inquiry.createdAt).toLocaleString(),

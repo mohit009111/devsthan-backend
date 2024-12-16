@@ -71,7 +71,9 @@ const addToCart = async (req, res) => {
 
     const pricePerPerson = selectedPrice / totalPeople;
     const childPrice = pricePerPerson * childPriceFactor;
-    const totalPrice = adults * pricePerPerson + children * childPrice;
+    const price = adults * pricePerPerson + children * childPrice;
+    const gst = price * 0.05;
+    totalPrice=price+gst 
 
     console.log(`Price per person: ${pricePerPerson}`);
     console.log(`Price for Adults: ${adults * pricePerPerson}`);
