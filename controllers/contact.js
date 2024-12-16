@@ -61,9 +61,8 @@ const createInquiryOrContact = async (req, res) => {
       console.log("Email sent:", info.response);
     });
 
-
-    // Aisensy WhatsApp API Payload
-    const aisensyPayload = {
+if(uuid){
+ const aisensyPayload = {
       apiKey: process.env.AISENSY_API_KEY,
       campaignName: "contact",
       destination: phone,
@@ -85,8 +84,6 @@ const createInquiryOrContact = async (req, res) => {
       location: {},
       paramsFallbackValue: {}
     };
-
-    // Send WhatsApp message using Aisensy API
     const aisensyResponse = await axios.post('https://backend.aisensy.com/campaign/t1/api/v2', aisensyPayload, {
       headers: {
         'Authorization': `Bearer ${aisensyPayload.apiKey}`,
@@ -94,6 +91,40 @@ const createInquiryOrContact = async (req, res) => {
       }
     });
     console.log('WhatsApp message sent via Aisensy:', aisensyResponse.data);
+
+}else{
+  const aisensyPayload = {
+    apiKey: process.env.AISENSY_API_KEY,
+    campaignName: "contactus",
+    destination: phone,
+    userName: "Devsthan Expert",
+
+    templateParams: [
+      fullName
+
+    ]
+    ,
+    source: "whatsapp_inquiry_tour IMAGE",
+    media: {
+    },
+    buttons: [],
+    carouselCards: [],
+    location: {},
+    paramsFallbackValue: {}
+  };
+  const aisensyResponse = await axios.post('https://backend.aisensy.com/campaign/t1/api/v2', aisensyPayload, {
+    headers: {
+      'Authorization': `Bearer ${aisensyPayload.apiKey}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  console.log('WhatsApp message sent via Aisensy:', aisensyResponse.data);
+
+}
+    // Aisensy WhatsApp API Payload
+   
+    // Send WhatsApp message using Aisensy API
+  
 
     // Return saved data and tour information
     res.status(201).json({ success: true, data: savedData, tour });
