@@ -7,9 +7,6 @@ const axios = require('axios');
 const jwt = require("jsonwebtoken");
 const { configDotenv } = require("dotenv");
 configDotenv();
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, "okjnlk", { expiresIn: "1h" });
-};
 
 
 const transporter = nodemailer.createTransport({
@@ -36,11 +33,16 @@ const signup = async (req, res) => {
     }
 
     // Generate OTP
-    const otp = otpGenerator.generate(6, {
-      upperCase: false,
-      specialChars: false,
-      alphabets: false,
-    });
+    const generateNumericOTP = (length) => {
+      const digits = '0123456789';
+      let otp = '';
+      for (let i = 0; i < length; i++) {
+          otp += digits[Math.floor(Math.random() * 10)];
+      }
+      return otp;
+  };
+  
+  const otp = generateNumericOTP(6);
 
     // Save user with OTP and mark as unverified
     const newUser = new User({
@@ -164,12 +166,16 @@ const login = async (req, res) => {
 
 
     // Generate OTP
-    const otp = otpGenerator.generate(6, {
-      upperCase: false,
-      specialChars: false,
-      alphabets: false,
-    });
-
+    const generateNumericOTP = (length) => {
+      const digits = '0123456789';
+      let otp = '';
+      for (let i = 0; i < length; i++) {
+          otp += digits[Math.floor(Math.random() * 10)];
+      }
+      return otp;
+  };
+  
+  const otp = generateNumericOTP(6);
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 minutes
 
     // Save OTP and expiration time in the User model

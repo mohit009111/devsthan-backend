@@ -27,7 +27,7 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cors = require('cors');
 app.use(express.json({ limit: '50mb' }));
 const port = 4000;
-const uri = "mongodb+srv://rawat009111:fSQGtHMkkia3YhjZ@tours.qpddv9d.mongodb.net/?retryWrites=true&w=majority";
+const uri = "mongodb+srv://indiadevsthan:Yq18ukFkrOGK8Gzr@tours.qpddv9d.mongodb.net/?retryWrites=true&w=majority";
 const mongoose = require('mongoose');
 require('dotenv').config();
 app.use(bodyParser.json({ limit: '70mb' }));
