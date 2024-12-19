@@ -14,7 +14,7 @@ const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY, 
     key_secret: process.env.RAZORPAY_SECRET 
 });
-console.log(process.env.ADMIN_EMAIL)
+
 const sendEmail = async (order, actionType) => {
     let subject, htmlContent;
   

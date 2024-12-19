@@ -183,59 +183,79 @@ const deleteTour = async (req, res) => {
 
 const getAllTours = async (req, res) => {
   try {
-    console.log(req)
     const { location, tourType, minPrice, maxPrice, durations } = req.body;
+
+  
+  console.log(location)
     const tours = await Tour.find();
-    const filteredTours = tours.filter((tour) => tour.status !== "disabled");
+    // const filteredTours = tours.filter((tour) => tour.status !== "disabled");
 
-    let filteredToursByLocationAndName = filteredTours;
+    let filteredToursByLocationAndName = tours;
     if (location) {
-
-      filteredToursByLocationAndName = filteredTours.filter((tour) => {
-        const tourLocation = tour.location && tour.location.toLowerCase();
-        // console.log(tourLocation)
-        const tourName = tour.name && tour.name.toLowerCase();
-        // console.log(tourName)
-        const matchesLocation = tourLocation === location.toLowerCase();
-        console.log(matchesLocation)
-        const searchTermWords = location.toLowerCase().split(" ");
-        const matchesSearchTerm = searchTermWords.every((word) =>
-          tourName.includes(word)
-        );
-        return matchesLocation || matchesSearchTerm;
+      const searchTerm = location.toLowerCase().replace(/-/g, ' ');
+      console.log("Received search term:", searchTerm);
+    
+      filteredToursByLocationAndName = tours.filter((tour) => {
+        // Log the state for debugging
+      
+    
+        // Convert fields to lowercase for comparison
+        const tourLocation = tour.location?.toLowerCase() || "";
+        const tourState = tour.state?.toLowerCase() || "";
+        const tourCity = tour.city?.toLowerCase() || "";
+        const tourCountry = tour.country?.toLowerCase() || "";
+    console.log("edited",tourState)
+        // Match the search term with any field
+        const matchesLocation = 
+          tourLocation.includes(searchTerm) ||
+          tourState.includes(searchTerm) ||
+          tourCity.includes(searchTerm) ||
+          tourCountry.includes(searchTerm);
+    
+        // Return true if the search term matches any field
+        return matchesLocation;
       });
+    
+      console.log("Filtered tours:", filteredToursByLocationAndName);
     }
+    
 
-    let filteredToursByType = filteredToursByLocationAndName;
-    if (tourType && tourType.length > 0) {
-      filteredToursByType = filteredToursByLocationAndName.filter((tour) => {
-        return tourType.every((tourTypeItem) => {
-          return tour.tourType.includes(tourTypeItem);
-        });
-      });
-    }
+let filteredToursByType = filteredToursByLocationAndName;
+if (tourType && tourType.length > 0) {
+  filteredToursByType = filteredToursByLocationAndName.filter((tour) => {
+    return (
+      Array.isArray(tour.categories) && // Ensure categories is an array
+      tourType.every((tourTypeItem) =>
+        tour.categories.some((category) =>
+          category.toLowerCase() === tourTypeItem.toLowerCase()
+        )
+      )
+    );
+  });
+}
 
 
-    let filteredToursByPrice = filteredToursByType;
-    if (minPrice && maxPrice) {
-      filteredToursByPrice = filteredToursByType.filter((tour) => {
-        const tourPrice = parseFloat(tour.cost[0].standardPrice);
-        return (
-          !isNaN(tourPrice) && tourPrice >= minPrice && tourPrice <= maxPrice
-        );
-      });
-    }
+let filteredToursByPrice = filteredToursByType;
+
+if (minPrice && maxPrice) {
+  filteredToursByPrice = filteredToursByType.filter((tour) => {
+    // Ensure the pricing array exists and has an element at index 3
+    const tourPrice = tour.standardDetails?.pricing?.[0]?.price;
+   
+    // Check if the price exists, is a number, and is within the range
+    return (
+      !isNaN(tourPrice) && tourPrice >= minPrice && tourPrice <= maxPrice
+    );
+  });
+}
 
     let filteredToursByDuration = filteredToursByPrice;
     if (durations && durations.length > 0) {
       filteredToursByDuration = filteredToursByPrice.filter((tour) => {
-        const tourDurationNumbers = tour.duration.match(/\d+/g);
-        const tourDurationNumber = tourDurationNumbers
-          ? parseInt(tourDurationNumbers.join(""), 10)
-          : 0;
-
+        const tourDurationNumbers = tour.duration
+        
         return durations.every((duration) => {
-          return tourDurationNumber >= duration;
+          return tourDurationNumbers >= duration;
         });
       });
     }
@@ -259,7 +279,7 @@ const getToursForVendor = async (req, res) => {
 };
 const getTourDetails = async (req, res) => {
   try {
-    console.log("params", req.params)
+   
     const tourId = req.params.tourId;
 
     const tours = await Tour.find({ uuid: tourId });
@@ -334,10 +354,12 @@ const getToursByLocationDate = async (req, res) => {
 
 const getToursByFilter = async (req, res) => {
   try {
-    const { location } = req.params;
-    const { tourType, minPrice, maxPrice, durations } = req.body;
 
-    // Fetch all tours (consider adding pagination or filters for large datasets)
+    const { location } = req.params;
+    console.log(location)
+  
+
+   
     const tours = await Tour.find();
 
     // Filter by location
@@ -345,43 +367,16 @@ const getToursByFilter = async (req, res) => {
       const lowerCaseLocation = location.toLowerCase();
 
       return (
-        (tour.location && tour.location.toLowerCase() === lowerCaseLocation) ||
-        (tour.country && tour.country.toLowerCase() === lowerCaseLocation) ||
-        (tour.city && tour.city.toLowerCase() === lowerCaseLocation) ||
-        (tour.state && tour.state.toLowerCase() === lowerCaseLocation)
-      );
+        (tour.location && tour.location.toLowerCase() === lowerCaseLocation)
+       
+      )
     });
 
-    // Conditionally filter by tour type if provided
-    let filteredTours = filteredToursByLocation;
-    if (tourType && Array.isArray(tourType) && tourType.length > 0) {
-      filteredTours = filteredTours.filter((tour) =>
-        tourType.every((tourTypeItem) => tour.tourType.includes(tourTypeItem))
-      );
-    }
+   
 
-    // Conditionally filter by price range if minPrice and maxPrice are provided
-    if (typeof minPrice === "number" && typeof maxPrice === "number") {
-      filteredTours = filteredTours.filter((tour) => {
-        const tourPrice = parseFloat(tour.cost);
-        return !isNaN(tourPrice) && tourPrice >= minPrice && tourPrice <= maxPrice;
-      });
-    }
-
-    // Conditionally filter by duration if durations array is provided
-    if (durations && Array.isArray(durations) && durations.length > 0) {
-      filteredTours = filteredTours.filter((tour) => {
-        const tourDurationNumbers = tour.duration.match(/\d+/g);
-        const tourDurationNumber = tourDurationNumbers
-          ? parseInt(tourDurationNumbers.join(""), 10)
-          : 0;
-
-        return durations.every((duration) => tourDurationNumber >= duration);
-      });
-    }
-
+  
     // Respond with the filtered tours
-    res.json(filteredTours);
+    res.json(filteredToursByLocation);
   } catch (error) {
     console.error("Error updating tour:", error);
     res.status(500).json({ error: "Internal Server Error" });

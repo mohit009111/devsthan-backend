@@ -6,16 +6,16 @@ const tourDetailsSchema = new mongoose.Schema({
   overview: { type: String, default: null },
   location: { type: String, default: null },
   duration: { type: Number },
-  transportation: { type: Boolean},
+  transportation: { type: Boolean },
   meals: { type: Boolean, },
   hotel: { type: Boolean, },
   siteSeen: { type: Boolean, },
   welcomeDrinks: {
     type: Boolean,
-  },                          
+  },
   groupSize: { type: String },
   termsAndConditions: { type: String },
-  
+
   availableDates: { type: String },
   departureDetails: { type: String },
   knowBeforeYouGo: [{ type: String }],
@@ -65,7 +65,7 @@ const tourDetailsSchema = new mongoose.Schema({
         description: { type: String },
         day: { type: Number },
         meals: {
-          isAvailable:{ type: Boolean },
+          isAvailable: { type: Boolean },
           breakfast: {
             isAvailable: { type: Boolean, default: false },
             name: { type: String, default: '' },
@@ -137,7 +137,11 @@ const tourDetailsSchema = new mongoose.Schema({
             category: { type: String, default: "" },
             description: { type: String, default: "" },
             departureTime: { type: String, default: "" },
-            photos: [{ type: String, default: [] }]
+            photos: [{ type: String, default: [] }],
+            price: { type: Number },
+            maxPeople: { type: Number },
+            departureFrom: { type: String, default: "" },
+            arrivalTo: { type: String, default: "" },
           },
           bus: {
             isIncluded: { type: Boolean, default: false },
@@ -145,21 +149,33 @@ const tourDetailsSchema = new mongoose.Schema({
             category: { type: String, default: "" },
             description: { type: String, default: "" },
             departureTime: { type: String, default: "" },
-            photos: [{ type: String, default: [] }]
+            photos: [{ type: String, default: [] }],
+            price: { type: Number },
+            departureFrom: { type: String, default: "" },
+            arrivalTo: { type: String, default: "" },
+
           },
           train: {
             isIncluded: { type: Boolean, default: false },
             name: { type: String, default: "" },
+            category: { type: String, default: "" },
             description: { type: String, default: "" },
             departureTime: { type: String, default: "" },
-            photos: [{ type: String, default: [] }]
+            photos: [{ type: String, default: [] }],
+            price: { type: Number },
+            departureFrom: { type: String, default: "" },
+            arrivalTo: { type: String, default: "" },
           },
           flight: {
             isIncluded: { type: Boolean, default: false },
             name: { type: String, default: "" },
+            category: { type: String, default: "" },
             description: { type: String, default: "" },
             departureTime: { type: String, default: "" },
-            photos: [{ type: String, default: [] }]
+            photos: [{ type: String, default: [] }],
+            price: { type: Number },
+            departureFrom: { type: String, default: "" },
+            arrivalTo: { type: String, default: "" },
           }
         },
 
@@ -190,7 +206,7 @@ const tourDetailsSchema = new mongoose.Schema({
         description: { type: String },
         day: { type: Number },
         meals: {
-          isAvailable:{ type: Boolean },
+          isAvailable: { type: Boolean },
           breakfast: {
             isAvailable: { type: Boolean, default: false },
             name: { type: String, default: '' },
@@ -258,11 +274,17 @@ const tourDetailsSchema = new mongoose.Schema({
           isIncluded: { type: Boolean, default: false },
           car: {
             isIncluded: { type: Boolean, default: false },
+
+
             name: { type: String, default: "" },
             category: { type: String, default: "" },
             description: { type: String, default: "" },
             departureTime: { type: String, default: "" },
-            photos: [{ type: String, default: [] }]
+            photos: [{ type: String, default: [] }],
+            price: { type: Number },
+            maxPeople: { type: Number },
+            departureFrom: { type: String, default: "" },
+            arrivalTo: { type: String, default: "" },
           },
           bus: {
             isIncluded: { type: Boolean, default: false },
@@ -270,21 +292,32 @@ const tourDetailsSchema = new mongoose.Schema({
             category: { type: String, default: "" },
             description: { type: String, default: "" },
             departureTime: { type: String, default: "" },
-            photos: [{ type: String, default: [] }]
+            photos: [{ type: String, default: [] }],
+            price: { type: Number },
+            departureFrom: { type: String, default: "" },
+            arrivalTo: { type: String, default: "" },
           },
           train: {
             isIncluded: { type: Boolean, default: false },
             name: { type: String, default: "" },
+            category: { type: String, default: "" },
             description: { type: String, default: "" },
             departureTime: { type: String, default: "" },
-            photos: [{ type: String, default: [] }]
+            photos: [{ type: String, default: [] }],
+            price: { type: Number },
+            departureFrom: { type: String, default: "" },
+            arrivalTo: { type: String, default: "" },
           },
           flight: {
             isIncluded: { type: Boolean, default: false },
             name: { type: String, default: "" },
+            category: { type: String, default: "" },
             description: { type: String, default: "" },
             departureTime: { type: String, default: "" },
-            photos: [{ type: String, default: [] }]
+            photos: [{ type: String, default: [] }],
+            price: { type: Number },
+            departureFrom: { type: String, default: "" },
+            arrivalTo: { type: String, default: "" },
           }
         },
 
@@ -315,9 +348,9 @@ const tourDetailsSchema = new mongoose.Schema({
         description: { type: String },
         day: { type: Number },
         meals: {
-          isAvailable:{ type: Boolean },
+          isAvailable: { type: Boolean },
           breakfast: {
-            isAvailable:{ type: Boolean },
+            isAvailable: { type: Boolean },
             isAvailable: { type: Boolean, default: false },
             name: { type: String, default: '' },
             photos: [{ type: String }]  // array of photo URLs
@@ -388,7 +421,11 @@ const tourDetailsSchema = new mongoose.Schema({
             category: { type: String, default: "" },
             description: { type: String, default: "" },
             departureTime: { type: String, default: "" },
-            photos: [{ type: String, default: [] }]
+            photos: [{ type: String, default: [] }],
+            price: { type: Number },
+            departureFrom: { type: String, default: "" },
+            arrivalTo: { type: String, default: "" },
+            maxPeople:{ type: Number},
           },
           bus: {
             isIncluded: { type: Boolean, default: false },
@@ -396,21 +433,32 @@ const tourDetailsSchema = new mongoose.Schema({
             category: { type: String, default: "" },
             description: { type: String, default: "" },
             departureTime: { type: String, default: "" },
-            photos: [{ type: String, default: [] }]
+            photos: [{ type: String, default: [] }],
+            price: { type: Number },
+            departureFrom: { type: String, default: "" },
+            arrivalTo: { type: String, default: "" },
           },
           train: {
             isIncluded: { type: Boolean, default: false },
             name: { type: String, default: "" },
+            category: { type: String, default: "" },
             description: { type: String, default: "" },
             departureTime: { type: String, default: "" },
-            photos: [{ type: String, default: [] }]
+            photos: [{ type: String, default: [] }],
+            price: { type: Number },
+            departureFrom: { type: String, default: "" },
+            arrivalTo: { type: String, default: "" },
           },
           flight: {
             isIncluded: { type: Boolean, default: false },
             name: { type: String, default: "" },
+            category: { type: String, default: "" },
             description: { type: String, default: "" },
             departureTime: { type: String, default: "" },
-            photos: [{ type: String, default: [] }]
+            photos: [{ type: String, default: [] }],
+            price: { type: Number },
+            departureFrom: { type: String, default: "" },
+            arrivalTo: { type: String, default: "" },
           }
         },
 
