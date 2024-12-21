@@ -164,7 +164,7 @@ const createTour = async (req, res) => {
 const deleteTour = async (req, res) => {
   try {
     const { uuid } = req.params; // Get UUID from request parameters
-    console.log(uuid)
+
     // Check if the tour exists
     const deletedTour = await Tour.findOneAndDelete({ uuid });
 
@@ -186,7 +186,7 @@ const getAllTours = async (req, res) => {
     const { location, tourType, minPrice, maxPrice, durations } = req.body;
 
   
-  console.log(location)
+
     const tours = await Tour.find();
     // const filteredTours = tours.filter((tour) => tour.status !== "disabled");
 
@@ -354,35 +354,25 @@ const getToursByLocationDate = async (req, res) => {
 
 const getToursByFilter = async (req, res) => {
   try {
-
     const { location } = req.params;
-    console.log(location)
-  
 
-   
-    const tours = await Tour.find();
+    if (!location) {
+      return res.status(400).json({ error: "Location parameter is required" });
+    }
 
-    // Filter by location
-    const filteredToursByLocation = tours.filter((tour) => {
-      const lowerCaseLocation = location.toLowerCase();
-
-      return (
-        (tour.location && tour.location.toLowerCase() === lowerCaseLocation)
-       
-      )
+    // Use Mongoose to query directly for matching tours by state
+    const lowerCaseLocation = location.toLowerCase();
+    const filteredToursByLocation = await Tour.find({
+      state: { $regex: new RegExp(`^${lowerCaseLocation}$`, "i") } // Case-insensitive match
     });
 
-   
-
-  
     // Respond with the filtered tours
-    res.json(filteredToursByLocation);
+    res.status(200).json(filteredToursByLocation);
   } catch (error) {
-    console.error("Error updating tour:", error);
+    console.error("Error fetching tours by location:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 
 module.exports = {

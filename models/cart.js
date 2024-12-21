@@ -31,10 +31,7 @@ const cartSchema = new mongoose.Schema({
   selectedRooms:{
     type: Number,
   },
-  addedAt: {
-    type: Date,
-    default: Date.now,
-  },
+   addedAt: { type: Date, default: Date.now },
 });
 
 const Cart = mongoose.model('Cart', cartSchema);

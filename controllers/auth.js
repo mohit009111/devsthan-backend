@@ -1,6 +1,7 @@
 const User = require("../models/users.js");
 const Vendor = require("../models/vendors.js");
 const bcrypt = require("bcryptjs")
+const Cart = require('../models/cart');
 const otpGenerator = require("otp-generator");
 const nodemailer = require("nodemailer");
 const axios = require('axios');
@@ -86,7 +87,7 @@ const signup = async (req, res) => {
 
 const verifyOtp = async (req, res) => {
   try {
-    const { email, otp ,phone,name} = req.body;
+    const { email, otp, phone, name,userTempId } = req.body;
 
     // Find the user by email
     const user = await User.findOne({ email });
@@ -95,51 +96,75 @@ const verifyOtp = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Check if the provided OTP matches the stored OTP
-    if (user.otp !== otp) {
+    // Debugging: Log OTP values and lengths
+  
+
+    // Trim and normalize both values to avoid any hidden discrepancies
+    const dbOtp = user.otp.trim().normalize();
+    const inputOtp = otp.trim().normalize();
+
+    // Compare OTPs
+    if (dbOtp !== inputOtp) {
+      user.isVerified = false;
       return res.status(400).json({ error: "Invalid OTP" });
     }
-
-    // Mark the user as verified and clear the OTP
     user.isVerified = true;
-    user.otp = null; 
+    user.otp = null;
+    console.log("user",user._id)
     await user.save();
+    if (userTempId) {
+      const cart = await Cart.findOne({ userTempId: userTempId }).sort({ addedAt: -1 })
+      console.log("cart",cart)
+      if (cart) {
+        cart.userId = user._id; 
+        await cart.save();
+        console.log("Cart updated with user ID:", cart);
+      } else {
+        console.log("No cart found for the provided tempId.");
+      }
+    }
 
     // Generate a JWT token
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
-      { expiresIn: '24h' } // Token expires in 1 hour
+      { expiresIn: '72h' } // Token expires in 72 hours
     );
-     const aisensyPayload = {
-              apiKey: process.env.AISENSY_API_KEY,
-              campaignName: "welcome",
-              destination: phone,
-              userName: "Devsthan Expert",
-        
-              templateParams: [
-                name
-        
-              ]
-              ,
-              source: "whatsapp_inquiry_tour IMAGE",
-              buttons: [],
-              carouselCards: [],
-              location: {},
-              paramsFallbackValue: {}
-            };
-        
-            // Send WhatsApp message using Aisensy API
-            const aisensyResponse = await axios.post('https://backend.aisensy.com/campaign/t1/api/v2', aisensyPayload, {
-              headers: {
-                'Authorization': `Bearer ${aisensyPayload.apiKey}`,
-                'Content-Type': 'application/json'
-              }
-            });
-            console.log('WhatsApp message sent via Aisensy:', aisensyResponse.data);
-    // Return user details and token
+
+    // Aisensy payload for WhatsApp message
+    const aisensyPayload = {
+      apiKey: process.env.AISENSY_API_KEY,
+      campaignName: "welcome",
+      destination: phone,
+      userName: "Devsthan Expert",
+      templateParams: [name],
+      source: "whatsapp_inquiry_tour IMAGE",
+      buttons: [],
+      carouselCards: [],
+      location: {},
+      paramsFallbackValue: {}
+    };
+
+    // Send WhatsApp message using Aisensy API
+    try {
+      const aisensyResponse = await axios.post(
+        'https://backend.aisensy.com/campaign/t1/api/v2',
+        aisensyPayload,
+        {
+          headers: {
+            'Authorization': `Bearer ${aisensyPayload.apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      console.log('WhatsApp message sent via Aisensy:', aisensyResponse.data);
+    } catch (aisensyError) {
+      console.error("Aisensy API Error:", aisensyError.response?.data || aisensyError.message);
+    }
+
+    // Return success response with user details and token
     res.status(200).json({
-      success:true,
+      success: true,
       message: "OTP verified successfully. Redirecting to home page.",
       user: {
         id: user._id,
@@ -150,65 +175,96 @@ const verifyOtp = async (req, res) => {
       token,
     });
   } catch (error) {
-    res.status(500).json({ success:false,error: "Internal server error" });
+    console.error("Server error:", error.message);
+    res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
 
 
 const login = async (req, res) => {
   try {
-    const { email} = req.body;
-    const existingUser = await User.findOne({ email });
+    const { email } = req.body;
 
-    if (!existingUser) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
+    // Check if user exists
+    let user = await User.findOne({ email });
 
     // Generate OTP
     const generateNumericOTP = (length) => {
       const digits = '0123456789';
       let otp = '';
       for (let i = 0; i < length; i++) {
-          otp += digits[Math.floor(Math.random() * 10)];
+        otp += digits[Math.floor(Math.random() * 10)];
       }
       return otp;
-  };
-  
-  const otp = generateNumericOTP(6);
-    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 minutes
-
-    // Save OTP and expiration time in the User model
-    existingUser.otp = otp;
-    existingUser.otpExpiresAt = otpExpiresAt;
-    await existingUser.save();
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Verify Your Account - OTP",
-      text: `Hello ${existingUser.name},\n\nTo verify your login, please use the following OTP:\n\nOTP: ${otp}\n\nThis OTP will expire in 10 minutes. Please do not share this OTP with anyone.\n\nBest regards,\nDevsthan Expert`,
     };
 
-    // Send email with OTP
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Error sending email:", error);
-        return res.status(500).json({ error: "Error sending OTP email." });
-      }
-      console.log("Email sent:", info.response);
-    });
-    res.status(201).json({
-      success:true,
-      message: "OTP sent. Please verify to continue.",
-      email,
-    });
-   
+    const otp = generateNumericOTP(6);
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 minutes
+
+    if (!user) {
+      // Create new user if email doesn't exist
+      user = new User({
+        email,
+        otp,
+        otpExpiresAt,
+      });
+      await user.save();
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Welcome to Devsthan Expert - Verify Your Account",
+        text: `Hello,\n\nYour account has been created. To verify your account, please use the following OTP:\n\nOTP: ${otp}\n\nThis OTP will expire in 10 minutes. Please do not share this OTP with anyone.\n\nBest regards,\nDevsthan Expert`,
+      };
+
+      // Send email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Error sending email:", error);
+          return res.status(500).json({ error: "Error sending OTP email." });
+        }
+        console.log("Email sent:", info.response);
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: "Account created and OTP sent. Please verify to continue.",
+        email,
+      });
+    } else {
+      // If user exists, update OTP and expiration
+      user.otp = otp;
+      user.otpExpiresAt = otpExpiresAt;
+      await user.save();
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Verify Your Login - OTP",
+        text: `Hello ${user.name},\n\nTo verify your login, please use the following OTP:\n\nOTP: ${otp}\n\nThis OTP will expire in 10 minutes. Please do not share this OTP with anyone.\n\nBest regards,\nDevsthan Expert`,
+      };
+
+      // Send email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Error sending email:", error);
+          return res.status(500).json({ error: "Error sending OTP email." });
+        }
+        console.log("Email sent:", info.response);
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP sent. Please verify to continue.",
+        email,
+      });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 
 const getUser = async (req, res) => {

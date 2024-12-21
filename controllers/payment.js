@@ -120,6 +120,7 @@ const paymentCalculate = async (req, res) => {
         const pricePerPerson = selectedPrice / totalPeople;
         const childPrice = pricePerPerson * childPriceFactor;
         const price = adults * pricePerPerson + children * childPrice;
+
         const gst = price * 0.05;
         totalPrice=price+gst 
 
@@ -152,7 +153,7 @@ const createOrder = async (req, res) => {
     try {
         // Extract data from request body
         const { tourId, userId, category, address, mobile, email, rooms, username,date } = req.body;
-        console.log(email)
+      
 
         const user = await Users.findOne({ userId });
 
@@ -168,18 +169,7 @@ const createOrder = async (req, res) => {
         }
 
         // Check if user already has a booking for this tour
-        const existingOrder = await Orders.findOne({
-            userId: userId,
-            tourId: tourId,
-            paymentStatus: { $ne: "failed" },
-        });
-        if (existingOrder) {
-            return res.status(400).json({
-                success: false,
-                message: "You have already booked this tour.",
-            });
-        }
-
+      
         const { adults, children } = cart;
         const totalPeople = adults + children;
         const childPriceFactor = 0.5;
@@ -243,13 +233,13 @@ const createOrder = async (req, res) => {
             to: email,
             subject: "Your Order is Placed - Awaiting Confirmation",
             html: `
-                <h2>Thank you for your order, ${username}!</h2>
+                <h2>Thank you for your order, ${username ? username : "user"}!</h2>
                 <p>Your order has been placed and is waiting for confirmation. Below are your order details:</p>
                 <h3>Order Details:</h3>
                 <ul>
                     <li><strong>Tour Name:</strong> ${tour.name}</li>
                     <li><strong>Category:</strong> ${category}</li>
-                    <li><strong>Total Price:</strong> $${totalPrice.toFixed(2)}</li>
+                    <li><strong>Total Price:</strong> Rs. ${totalPrice.toFixed(2)}</li>
                     
                     <li><strong>Address:</strong> ${address}</li>
                     <li><strong>Mobile:</strong> ${mobile}</li>
@@ -311,14 +301,14 @@ const createOrder = async (req, res) => {
               paramsFallbackValue: {}
             };
         
-            // Send WhatsApp message using Aisensy API
-            const aisensyResponse = await axios.post('https://backend.aisensy.com/campaign/t1/api/v2', aisensyPayload, {
-              headers: {
-                'Authorization': `Bearer ${aisensyPayload.apiKey}`,
-                'Content-Type': 'application/json'
-              }
-            });
-            console.log('WhatsApp message sent via Aisensy:', aisensyResponse.data);
+           
+            // const aisensyResponse = await axios.post('https://backend.aisensy.com/campaign/t1/api/v2', aisensyPayload, {
+            //   headers: {
+            //     'Authorization': `Bearer ${aisensyPayload.apiKey}`,
+            //     'Content-Type': 'application/json'
+            //   }
+            // });
+            // console.log('WhatsApp message sent via Aisensy:', aisensyResponse.data);
         // Respond with the created order
         return res.status(201).json({
             success: true,

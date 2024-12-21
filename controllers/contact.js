@@ -184,10 +184,10 @@ const getAllInquiries = async (req, res) => {
     // Fetch the tour name for each inquiry by uuid
     const formattedInquiries = await Promise.all(
       inquiries.map(async (inquiry) => {
-        console.log("in", inquiry)
+      
         const tour = await Tour.findOne({ uuid: inquiry.uuid });
         const tourName = tour ? tour.name : 'Unknown Tour';  // Default to 'Unknown Tour' if tour not found
-        console.log("tour", tour)
+     
         return {
           ...inquiry.toObject(),
           createdAt: new Date(inquiry.createdAt).toLocaleString(),

@@ -25,7 +25,7 @@ const addToCart = async (req, res) => {
       try {
         const decoded = jwt.verify(token, SECRET_KEY);
         userId = decoded.id || decoded.userId;
-        console.log("decoded id",decoded)
+      
       } catch (error) {
         return res.status(401).json({
           success: false,
@@ -72,15 +72,18 @@ const addToCart = async (req, res) => {
     const pricePerPerson = selectedPrice / totalPeople;
     const childPrice = pricePerPerson * childPriceFactor;
     const price = adults * pricePerPerson + children * childPrice;
+    console.log("final",price)
     const gst = price * 0.05;
     totalPrice=price+gst 
+
+ 
 
     console.log(`Price per person: ${pricePerPerson}`);
     console.log(`Price for Adults: ${adults * pricePerPerson}`);
     console.log(`Price for Children: ${children * childPrice}`);
     console.log(`Total Price: ${totalPrice}`);
 
-    // Create a new cart entry regardless of existing entries
+    // Create a new cart entry
     const newCartItem = new Cart({
       userId: userId || null,
       userTempId: userTempId || null,
@@ -90,9 +93,11 @@ const addToCart = async (req, res) => {
       category,
       totalPrice,
       selectedRooms,
+      addedAt: new Date(),
     });
 
     await newCartItem.save();
+
     return res.status(201).json({
       success: true,
       message: "Item added to cart successfully!",
@@ -100,7 +105,7 @@ const addToCart = async (req, res) => {
     });
   } catch (error) {
     console.error("Error adding to cart:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: "Failed to add to cart. Please try again.",
     });
@@ -109,8 +114,6 @@ const addToCart = async (req, res) => {
 const getCart = async (req, res) => {
   try {
     const { token, userTempId } = req.body;
-
-    // Check if either token or userTempId is provided
     if (!token && !userTempId) {
       return res.status(400).json({ message: 'Token or userTempId is required.' });
     }
@@ -124,8 +127,10 @@ const getCart = async (req, res) => {
         const tourId = cart.tourId;
         tour = await Tour.findOne({ uuid: tourId });
       }
-    } else if (token) {
+    } 
+    if (token) {
       const decoded = jwt.verify(token, SECRET_KEY);
+      console.log("decoded",decoded)
       const userId = decoded.id || decoded.userId;
 
       cart = await Cart.findOne({ userId }).sort({ addedAt: -1 });

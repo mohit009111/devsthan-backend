@@ -57,9 +57,9 @@ const deleteWhyChoose = async (req, res) => {
 
 const getAllWhyChoose = async (req, res) => {
     try {
-        console.log("hiii")
+
         const whyChooses = await WhyChoose.find();
-        console.log(whyChooses)
+
         res.status(200).json({ status: "success", data: whyChooses });
     } catch (error) {
         console.error("Error getting why choose:", error);
