@@ -233,7 +233,7 @@ const createOrder = async (req, res) => {
             to: email,
             subject: "Your Order is Placed - Awaiting Confirmation",
             html: `
-                <h2>Thank you for your order, ${username ? username : "user"}!</h2>
+              <h2>Thank you for your order, Valued Customer!</h2>
                 <p>Your order has been placed and is waiting for confirmation. Below are your order details:</p>
                 <h3>Order Details:</h3>
                 <ul>
@@ -257,7 +257,7 @@ const createOrder = async (req, res) => {
             from: process.env.EMAIL_USER,
             to: process.env.ADMIN_EMAIL, // Replace with admin email address
             subject: "New Order Placed",
-            text: `Dear Admin,\n\nA new order has been placed with the following details:\n\n- Username: ${username}\n- User ID: ${userId}\n- Tour: ${tour.name}\n- Category: ${category}\n- Total Price: $${totalPrice}\n- Email: ${email}\n- Mobile: ${mobile}\n- Address: ${address}\n\nPlease review the order and take the necessary action.\n\nBest regards,\nDevsthan Expert System`,
+            text: `Dear Admin,\n\nA new order has been placed with the following details:\n\n- Username:${username && username.trim() ? username : "Valued Customer"}!\n- User ID: ${userId}\n- Tour: ${tour.name}\n- Category: ${category}\n- Total Price: $${totalPrice}\n- Email: ${email}\n- Mobile: ${mobile}\n- Address: ${address}\n\nPlease review the order and take the necessary action.\n\nBest regards,\nDevsthan Expert System`,
         };
 
         // Send both emails
@@ -302,13 +302,13 @@ const createOrder = async (req, res) => {
             };
         
            
-            // const aisensyResponse = await axios.post('https://backend.aisensy.com/campaign/t1/api/v2', aisensyPayload, {
-            //   headers: {
-            //     'Authorization': `Bearer ${aisensyPayload.apiKey}`,
-            //     'Content-Type': 'application/json'
-            //   }
-            // });
-            // console.log('WhatsApp message sent via Aisensy:', aisensyResponse.data);
+            const aisensyResponse = await axios.post('https://backend.aisensy.com/campaign/t1/api/v2', aisensyPayload, {
+              headers: {
+                'Authorization': `Bearer ${aisensyPayload.apiKey}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            console.log('WhatsApp message sent via Aisensy:', aisensyResponse.data);
         // Respond with the created order
         return res.status(201).json({
             success: true,
