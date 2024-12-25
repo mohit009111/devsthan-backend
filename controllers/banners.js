@@ -1,142 +1,153 @@
-
 const Banners = require('../models/banners.js');
 const path = require('path');
 const fs = require('fs');
-const bannerImages = {
-    homeBanner: [],
-    anotherType: [],
-};
+
+// Add a new banner or update an existing one
 const addBanner = async (req, res) => {
-    const { page } = req.query;  // Get the 'page' query parameter
-  
+    const { page } = req.query;
+
     if (!page) {
         return res.status(400).json({ error: 'Page parameter is required.' });
     }
 
     try {
-        const { bannerUrls } = req.body; // Get the URLs from the request body
+        const { desktop, mobile, tablet } = req.body;
 
-        // Check if bannerUrls is missing or if it's an empty array
-        if (!bannerUrls || bannerUrls.length === 0) {
-            return res.status(400).json({ error: "Banner URLs are missing" });
+        // Validate that we have arrays for each device
+        if (!Array.isArray(desktop) || !Array.isArray(mobile) || !Array.isArray(tablet)) {
+            return res.status(400).json({ error: 'Each device (desktop, mobile, tablet) must be an array.' });
         }
 
-        // If the page is 'homeBanner', ensure the bannerUrls is an array (multiple images allowed)
-        if (page === 'homeBanner' && !Array.isArray(bannerUrls)) {
-            return res.status(400).json({ error: "Home banner should be an array of image URLs" });
-        }
-
-        // Try to find an existing banner for the page
+        // Find existing banner by page
         const existingBanner = await Banners.findOne({ page });
 
+        // Prepare the banner data for updating or creating
+        const bannerData = {
+            desktop: desktop || [],
+            mobile: mobile || [],
+            tablet: tablet || []
+        };
+
         if (existingBanner) {
-            if (page === 'homeBanner') {
-                // If the page is 'homeBanner', allow adding multiple images and merge URLs
-                existingBanner.bannerUrls = [...new Set([...existingBanner.bannerUrls, ...bannerUrls])]; // Merge and remove duplicates
-            } else {
-                // For other pages, replace the current banner with the new one (no multiple images allowed)
-                existingBanner.bannerUrls = [bannerUrls[0]]; // Replace with the new image URL (only one image allowed)
-            }
-
+            // Update the banner URLs for the existing banner entry
+            existingBanner.bannerUrls = bannerData;
             await existingBanner.save();
-
-            res.status(200).json({
-                message: `${page} banners updated successfully`,
+            return res.status(200).json({
+                message: `${page} banners updated successfully.`,
                 data: existingBanner,
             });
-        } else {
-            // If the banner doesn't exist, create a new one
-            if (page === 'homeBanner') {
-                // If it's the home banner, allow multiple images
-                const newBanner = await Banners.create({ page, bannerUrls });
-                res.status(200).json({
-                    message: `${page} banners uploaded successfully`,
-                    data: newBanner,
-                });
-            } else {
-                // For other pages, only allow a single image
-                const newBanner = await Banners.create({ page, bannerUrls: [bannerUrls[0]] });
-                res.status(200).json({
-                    message: `${page} banner uploaded successfully`,
-                    data: newBanner,
-                });
-            }
         }
 
+        // Create a new banner entry with the separate device URLs
+        const newBanner = await Banners.create({
+            page,
+            bannerUrls: bannerData,
+        });
+
+        res.status(201).json({
+            message: `${page} banners uploaded successfully.`,
+            data: newBanner,
+        });
     } catch (error) {
-        console.error("Error saving or updating banner:", error);
-        res.status(500).json({ error: "Internal server error" });
+        console.error('Error adding or updating banner:', error);
+        res.status(500).json({ error: 'Internal server error.' });
     }
 };
+
+// Delete a banner image
 const deleteBanner = async (req, res) => {
     try {
-        const { imageUrl, page } = req.body;
+        console.log('DELETE /api/deleteBannerImage hit');
+        const { imageUrl, page, device } = req.body;
 
-        if (!imageUrl || !page) {
-            return res.status(400).json({ message: 'Image URL and page are required.' });
+        // Log incoming request data
+        console.log('Request Data:', { imageUrl, page, device });
+
+        // Validate request body
+        if (!imageUrl || !page || !device) {
+            console.error('Validation error: Missing parameters');
+            return res.status(400).json({ error: 'Image URL, page, and device are required.' });
         }
 
-        // Find the document by page
+        // Validate device type
+        const validDevices = ['desktop', 'mobile', 'tablet'];
+        if (!validDevices.includes(device)) {
+            console.error('Validation error: Invalid device type');
+            return res.status(400).json({ error: 'Invalid device type. Must be desktop, mobile, or tablet.' });
+        }
+
+        // Fetch the document by page
         const bannerDocument = await Banners.findOne({ page });
+        console.log('Fetched Banner Document:', bannerDocument);
 
         if (!bannerDocument) {
-            return res.status(404).json({ message: 'Page not found.' });
+            console.error('Error: Page not found');
+            return res.status(404).json({ error: 'Page not found.' });
         }
 
-        // Check if the image URL exists in the bannerUrls array
-        const imageIndex = bannerDocument.bannerUrls.indexOf(imageUrl);
+        // Ensure the `bannerUrls` object exists
+        if (!bannerDocument.bannerUrls || !bannerDocument.bannerUrls[device]) {
+            console.error(`Error: No banners found for the ${device} device`);
+            return res.status(404).json({ error: `No banners found for the ${device} device.` });
+        }
+
+        // Access the correct device array
+        const deviceArray = bannerDocument.bannerUrls[device];
+        console.log(`Device Array for ${device}:`, deviceArray);
+
+        // Find the image index in the device array
+        const imageIndex = deviceArray.indexOf(imageUrl);
+        console.log('Index of Image URL:', imageIndex);
+
         if (imageIndex === -1) {
-            return res.status(404).json({ message: 'Image not found.' });
+            console.error('Error: Image not found in the specified device array');
+            return res.status(404).json({ error: 'Image not found in the specified device array.' });
         }
 
-        // Remove the image URL from the array
-        bannerDocument.bannerUrls.splice(imageIndex, 1);
+        // Remove the image from the array
+        deviceArray.splice(imageIndex, 1);
+        console.log('Updated Device Array:', deviceArray);
+
+        // Save the updated document
         await bannerDocument.save();
 
-        // Optionally, delete the image from the file system if applicable
-        const imagePath = path.join(__dirname, '..', 'uploads', path.basename(imageUrl)); // Adjust path as needed
-        if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath);
-        }
-
-        res.status(200).json({ message: 'Image deleted successfully.' });
+        // Send success response
+        console.log('Image deletion successful.');
+        return res.status(200).json({ success:true,message: `Image deleted successfully from the ${device} array.` });
     } catch (error) {
-        console.error('Error deleting image:', error);
-        res.status(500).json({ message: 'Internal server error.', error: error.message });
+        console.error('Unexpected error occurred:', error);
+        return res.status(500).json({success:false, error: 'Internal server error.' });
     }
 };
+
+// Get all banner images for a specific page
 const getAllBannerImages = async (req, res) => {
-    const { page } = req.query;  
+    const { page } = req.query;
 
     if (!page) {
-        return res.status(400).json({ error: 'Page parameter is required' });
+        return res.status(400).json({ error: 'Page parameter is required.' });
     }
 
     try {
-        // Fetch banner data from database (this can be modified to your storage method)
-        const banner = await Banners.findOne({ page: page });  // Assuming you're storing banner info in a collection
+        const banner = await Banners.findOne({ page });
 
         if (!banner) {
-            return res.status(404).json({ error: `No banner found for page: ${page}` });
+            return res.status(404).json({ error: `No banners found for page: ${page}` });
         }
 
-        // Assuming your banner object has a `bannerUrls` field that stores the image URLs
-        const bannerUrls = banner.bannerUrls;
-
-        return res.json({
+        res.status(200).json({
             data: {
-                bannerUrls: bannerUrls || [],  // If no images, return an empty array
+                bannerUrls: banner.bannerUrls || [],
             },
         });
     } catch (error) {
-        console.error("Error fetching banners:", error);
-        return res.status(500).json({ error: 'Failed to fetch banner images' });
+        console.error('Error fetching banners:', error);
+        res.status(500).json({ error: 'Internal server error.' });
     }
 };
 
 module.exports = {
     addBanner,
+    deleteBanner,
     getAllBannerImages,
-    deleteBanner
-  };
-  
+};
