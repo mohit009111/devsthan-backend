@@ -28,7 +28,7 @@ const sendEmail = async (order, actionType) => {
         <ul>
           <li><strong>Tour ID:</strong> ${order.tourId}</li>
           <li><strong>Category:</strong> ${order.category}</li>
-          <li><strong>Total Price:</strong> $${order.totalPrice}</li>
+          <li><strong>Total Price:</strong> Rs. ${order.totalPrice}</li>
           <li><strong>Rooms:</strong>
             <ul>
               ${order.rooms
