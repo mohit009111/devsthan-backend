@@ -164,8 +164,6 @@ app.put('/api/customizedQuery/:id', customizedQuesry.editCustomizedQuesry);
 
 app.post('/api/addToCart',  cart.addToCart);
 app.post('/api/getCart', cart.getCart)
-
-
 app.post('/paymentCalculate', payment.paymentCalculate);
 app.post('/create-order', payment.createOrder);
 app.get('/api/getOrder', payment.getOrder);
