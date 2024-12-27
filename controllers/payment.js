@@ -22,7 +22,7 @@ const sendEmail = async (order, actionType) => {
       subject = 'Tour Confirmation';
       htmlContent = `
         <h2>Tour Confirmed</h2>
-        <p>Dear ${order.username},</p>
+        <p>Dear user,</p>
         <p>Your tour has been successfully confirmed!</p>
         <p><strong>Details:</strong></p>
         <ul>
@@ -46,7 +46,7 @@ const sendEmail = async (order, actionType) => {
       subject = 'Tour Rejection';
       htmlContent = `
         <h2>Tour Rejected</h2>
-        <p>Dear ${order.username},</p>
+        <p>Dear user,</p>
         <p>We regret to inform you that your tour has been rejected due to some issues.</p>
         <p>If you have any questions, please contact us for further details.</p>
         <p>Thank you for understanding.</p>
@@ -237,7 +237,7 @@ const createOrder = async (req, res) => {
                 <p>Your order has been placed and is waiting for confirmation. Below are your order details:</p>
                 <h3>Order Details:</h3>
                 <ul>
-                    <li><strong>Tour Name:</strong> ${tour.name}</li>
+                    <li><strong>Tour Name:</strong> user</li>
                     <li><strong>Category:</strong> ${category}</li>
                     <li><strong>Total Price:</strong> Rs. ${totalPrice.toFixed(2)}</li>
                     
@@ -257,7 +257,7 @@ const createOrder = async (req, res) => {
             from: process.env.EMAIL_USER,
             to: process.env.ADMIN_EMAIL, // Replace with admin email address
             subject: "New Order Placed",
-            text: `Dear Admin,\n\nA new order has been placed with the following details:\n\n- Username:${username && username.trim() ? username : "Valued Customer"}!\n- User ID: ${userId}\n- Tour: ${tour.name}\n- Category: ${category}\n- Total Price: $${totalPrice}\n- Email: ${email}\n- Mobile: ${mobile}\n- Address: ${address}\n\nPlease review the order and take the necessary action.\n\nBest regards,\nDevsthan Expert System`,
+            text: `Dear Admin,\n\nA new order has been placed with the following details:\n\n-"Valued Customer"\n- User ID: ${userId}\n- Tour: ${tour.name}\n- Category: ${category}\n- Total Price: $${totalPrice}\n- Email: ${email}\n- Mobile: ${mobile}\n- Address: ${address}\n\nPlease review the order and take the necessary action.\n\nBest regards,\nDevsthan Expert System`,
         };
 
         // Send both emails

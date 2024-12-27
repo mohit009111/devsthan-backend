@@ -191,7 +191,7 @@ const getAllTours = async (req, res) => {
 
     let filteredTours = tours;
     if (location) {
-      const searchTerm = location.toLowerCase().replace(/-/g, ' ');
+      const searchTerm = location.toLowerCase()
     
       filteredTours = filteredTours.filter((tour) => {
         const tourLocation = tour.location?.toLowerCase() || "";
