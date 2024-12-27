@@ -46,20 +46,40 @@ const createInquiryOrContact = async (req, res) => {
 
 
     // Email options
-    const mailOptions = {
+    const userMailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Thank you for your inquiry/contact!",
       text: `Hi ${fullName},\n\nThank you for reaching out! We have received your message: "${message}".\n\nWe'll get back to you shortly.\n\nBest regards,\nDevsthan Expert`
     };
-
-    transporter.sendMail(mailOptions, (error, info) => {
+  
+    // Admin email
+    const adminMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: process.env.ADMIN_EMAIL, // Admin email address from environment variable
+      subject: "New Inquiry/Contact Submission",
+      text: `Dear Admin,\n\nYou have received a new inquiry/contact submission:\n\nName: ${fullName}\nEmail: ${email}\nMessage: "${message}"\n\nPlease follow up with the user promptly.\n\nBest regards,\nYour Website`
+    };
+  
+    // Send email to user
+    transporter.sendMail(userMailOptions, (error, info) => {
       if (error) {
-        console.error("Error sending email:", error);
-        return res.status(500).json({ error: 'Error sending email' });
+        console.error("Error sending email to user:", error);
+        return res.status(500).json({ error: "Error sending email to user" });
       }
-      console.log("Email sent:", info.response);
+      console.log("User email sent:", info.response);
+  
+      // Send email to admin
+      transporter.sendMail(adminMailOptions, (error, info) => {
+        if (error) {
+          console.error("Error sending email to admin:", error);
+          return res.status(500).json({ error: "Error sending email to admin" });
+        }
+        console.log("Admin email sent:", info.response);
+        return res.status(200).json({ message: "Emails sent successfully" });
+      });
     });
+    
 
 if(uuid){
  const aisensyPayload = {
